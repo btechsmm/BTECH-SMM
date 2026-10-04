@@ -12,6 +12,7 @@ import { supabase } from "./supabase.js";
 import { BUSINESS } from "./config.js";
 import { formatCurrency, formatNumber, formatDate, formatDateTime, escapeHtml, showToast, debounce } from "./utils.js";
 import { openModal, rpc, field, numOrNull } from "./loyalty-admin.js";
+import { photoUrl } from "./photo.js";
 
 let root = null;
 let settings = null;
@@ -23,6 +24,7 @@ const BADGE = { applicant: "pending", approved: "completed", suspended: "process
 const LABEL = { applicant: "Pending", approved: "Active", suspended: "Suspended", rejected: "Rejected", deactivated: "Deactivated" };
 const WD_BADGE = { pending: "pending", approved: "processing", paid: "completed", rejected: "cancelled" };
 
+const avatar = (a, big = false) => (a.photo_path ? `<img class="amb-avatar amb-avatar--img${big ? " amb-avatar--lg" : ""}" src="${escapeHtml(photoUrl(a.photo_path))}" alt="" />` : `<span class="amb-avatar${big ? " amb-avatar--lg" : ""}" aria-hidden="true">${escapeHtml((a.display_name || "?")[0].toUpperCase())}</span>`);
 const link = (code) => `${BUSINESS.website}/?ref=${encodeURIComponent(code)}`;
 const badge = (map, label, status) => `<span class="badge badge--status badge--${map[status]}">${label[status] || status}</span>`;
 const reasonField = (required = true) => field(required ? "Reason (required, recorded in the audit log)" : "Note (optional)", `<textarea name="reason" rows="2" ${required ? "required" : ""}></textarea>`);
@@ -92,7 +94,7 @@ async function loadList() {
   body.innerHTML = rows
     .map(
       (a) => `<tr>
-      <td data-label="Ambassador"><strong>${escapeHtml(a.display_name)}</strong><br /><span class="muted">${escapeHtml(a.email)}</span></td>
+      <td data-label="Ambassador"><div class="amb-cell">${avatar(a)}<span><strong>${escapeHtml(a.display_name)}</strong><br /><span class="muted">${escapeHtml(a.email)}</span></span></div></td>
       <td data-label="ID / Code">${a.ambassador_code ? escapeHtml(a.ambassador_code) : "—"}<br /><span class="muted">${a.referral_code ? escapeHtml(a.referral_code) : ""}</span></td>
       <td data-label="Status">${badge(BADGE, LABEL, a.status)}</td>
       <td data-label="Rate">${Number(a.commission_rate)}%</td>
@@ -102,7 +104,7 @@ async function loadList() {
       <td data-label="Available">${formatCurrency(a.balances.available)}<br /><span class="muted">${formatCurrency(a.balances.withdrawn)} withdrawn</span></td>
       <td data-label="Actions"><div class="loyalty-actions-cell">
         <button type="button" class="btn btn--secondary btn--sm" data-amb-manage="${a.id}">Manage</button>
-        ${a.status === "applicant" ? `<button type="button" class="btn btn--primary btn--sm" data-amb-act="approve" data-id="${a.id}">Approve</button>` : ""}
+        ${a.status === "applicant" && a.photo_path ? `<button type="button" class="btn btn--primary btn--sm" data-amb-act="approve" data-id="${a.id}">Approve</button>` : ""}
       </div></td></tr>`
     )
     .join("");
@@ -190,13 +192,13 @@ async function renderDetail(id) {
   box.hidden = false;
   const b = a.balances;
   const acts = [];
-  if (a.status === "applicant") acts.push(["approve", "Approve", "primary"], ["reject", "Reject", "secondary"]);
+  if (a.status === "applicant") acts.push(...(a.photo_path ? [["approve", "Approve", "primary"]] : []), ["reject", "Reject", "secondary"]);
   if (a.status === "approved") acts.push(["suspend", "Suspend", "secondary"], ["deactivate", "Deactivate", "secondary"]);
   if (a.status === "suspended" || a.status === "deactivated") acts.push(["reactivate", "Reactivate", "primary"]);
   if (a.status === "suspended") acts.push(["deactivate", "Deactivate", "secondary"]);
 
   box.innerHTML = `
-    <div class="panel__head"><h3>${escapeHtml(a.display_name)} ${badge(BADGE, LABEL, a.status)}</h3>
+    <div class="panel__head"><h3 class="amb-cell">${avatar(a, true)}<span>${escapeHtml(a.display_name)} ${badge(BADGE, LABEL, a.status)}</span></h3>
       <button type="button" class="btn btn--secondary btn--sm" data-amb-close>Close</button></div>
     <div class="panel__body panel__body--padded">
       <dl class="amb-hero__meta amb-hero__meta--admin">
@@ -216,6 +218,7 @@ async function renderDetail(id) {
         <div class="stat-card"><p class="stat-card__label">Available</p><p class="stat-card__value">${formatCurrency(b.available)}</p><p class="adash-kpi__sub">${formatCurrency(b.in_review)} in review</p></div>
         <div class="stat-card"><p class="stat-card__label">Withdrawn</p><p class="stat-card__value">${formatCurrency(b.withdrawn)}</p></div>
       </div>
+      ${a.status === "applicant" && !a.photo_path ? `<p class="form-error">This applicant has no profile photo yet, so they can't be approved. Ask them to add one from their Ambassador page.</p>` : ""}
       ${a.motivation ? `<p class="loyalty-note"><strong>Application:</strong> ${escapeHtml(a.motivation)}</p>` : ""}
       ${a.admin_notes ? `<p class="loyalty-note"><strong>Internal notes:</strong> ${escapeHtml(a.admin_notes)}</p>` : ""}
       <div class="loyalty-actions" style="margin:var(--sp-4) 0">
@@ -256,8 +259,8 @@ async function loadWithdrawals() {
     const list = await rpc("admin_list_withdrawals", { p_status: wdFilter || null, p_limit: 50 });
     body.innerHTML = list.length
       ? list
-          .map(
-            (w) => `<tr>
+        .map(
+          (w) => `<tr>
         <td data-label="Requested">${formatDateTime(w.requested_at)}</td>
         <td data-label="Ambassador">${escapeHtml(w.display_name)}<br /><span class="muted">${escapeHtml(w.ambassador_code || "")}</span></td>
         <td data-label="Amount">${formatCurrency(w.amount)}</td>
@@ -269,8 +272,8 @@ async function loadWithdrawals() {
           ${w.status === "approved" ? `<button type="button" class="btn btn--primary btn--sm" data-wd="mark_paid" data-id="${w.id}" data-amt="${w.amount}" data-phone="${escapeHtml(w.phone)}">Mark paid</button>` : ""}
           ${w.status === "pending" || w.status === "approved" ? `<button type="button" class="btn btn--secondary btn--sm" data-wd="reject" data-id="${w.id}" data-amt="${w.amount}">Reject</button>` : ""}
         </div></td></tr>`
-          )
-          .join("")
+        )
+        .join("")
       : `<tr><td colspan="7">No ${wdFilter || ""} withdrawal requests.</td></tr>`;
   } catch (ex) {
     body.innerHTML = `<tr><td colspan="7">${escapeHtml(ex.message)}</td></tr>`;

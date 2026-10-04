@@ -46,9 +46,12 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function loadImage(src) {
+function loadImage(src, cors = false) {
   return new Promise((resolve) => {
     const img = new Image();
+    // With CORS requested, an image the server refuses to share fails to load
+    // (we fall back to initials) instead of tainting the canvas and breaking export.
+    if (cors) img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
     img.src = src;
@@ -81,7 +84,7 @@ function formatIssued(iso) {
 }
 
 /**
- * data: { displayName, ambassadorCode, referralCode, status, issuedAt, verifyUrl,
+ * data: { displayName, photoUrl?, ambassadorCode, referralCode, status, issuedAt, verifyUrl,
  *         business: { website, email, phone }, logoSrc? }
  */
 export async function renderBadge(canvas, data) {
@@ -91,6 +94,7 @@ export async function renderBadge(canvas, data) {
   const st = STATUS[data.status] || STATUS.approved;
   const biz = data.business;
   const logo = await loadImage(data.logoSrc || "assets/brand/btech-smm-logo.png");
+  const photo = data.photoUrl ? await loadImage(data.photoUrl, true) : null;
 
   // Card
   ctx.clearRect(0, 0, BADGE_W, BADGE_H);
@@ -126,7 +130,7 @@ export async function renderBadge(canvas, data) {
   ctx.font = `800 58px ${FONT}`;
   ctx.fillText("BTECH SMM AMBASSADOR", 70, 262);
 
-  // Avatar (initials — profile photos are not part of the account data yet)
+  // Avatar: the ambassador's photo (initials only if no photo is on file)
   const ax = 70;
   const ay = 320;
   const ar = 120;
@@ -134,13 +138,29 @@ export async function renderBadge(canvas, data) {
   ctx.arc(ax + ar, ay + ar, ar, 0, Math.PI * 2);
   ctx.fillStyle = C.blue;
   ctx.fill();
-  ctx.fillStyle = C.white;
-  ctx.font = `800 96px ${FONT}`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(initials(data.displayName), ax + ar, ay + ar + 6);
-  ctx.textAlign = "left";
-  ctx.textBaseline = "alphabetic";
+  if (photo) {
+    // Cover-fit the photo into the circle, then add a white ring.
+    const side = Math.min(photo.width, photo.height);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(ax + ar, ay + ar, ar, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(photo, (photo.width - side) / 2, (photo.height - side) / 2, side, side, ax, ay, ar * 2, ar * 2);
+    ctx.restore();
+    ctx.beginPath();
+    ctx.arc(ax + ar, ay + ar, ar, 0, Math.PI * 2);
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = C.white;
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = C.white;
+    ctx.font = `800 96px ${FONT}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(initials(data.displayName), ax + ar, ay + ar + 6);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+  }
 
   // Name + status
   const nx = ax + ar * 2 + 50;

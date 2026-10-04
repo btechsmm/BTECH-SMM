@@ -3259,3 +3259,136 @@ a.ins-link:hover {
     align-items: flex-start;
   }
 }
+
+/* Ambassador profile photo */
+.amb-avatar--img {
+  object-fit: cover;
+  background: var(--surface-sunken);
+  border: 2px solid #fff;
+}
+
+.amb-avatar--lg {
+  width: 72px;
+  height: 72px;
+}
+
+.amb-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.amb-cell .amb-avatar {
+  width: 40px;
+  height: 40px;
+  font-size: var(--fs-sm);
+}
+
+.amb-cell .amb-avatar--lg {
+  width: 56px;
+  height: 56px;
+}
+
+.photo-crop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.photo-crop__stage canvas {
+  display: block;
+  width: 260px;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  cursor: grab;
+  touch-action: none;
+}
+
+.photo-crop__stage canvas:active {
+  cursor: grabbing;
+}
+
+.photo-crop__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 140px;
+  border: 2px dashed var(--border-strong);
+  border-radius: 50%;
+  color: var(--text-secondary);
+}
+
+.photo-crop__empty svg {
+  width: 56px;
+  height: 56px;
+}
+
+.photo-crop__controls {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.photo-crop__zoom {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.photo-crop .form-hint,
+.photo-crop .form-error {
+  margin: 0;
+}
+
+.amb-photo-change summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.verify-photo {
+  display: block;
+  width: 112px;
+  height: 112px;
+  margin: 0 auto var(--sp-3);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--surface-card);
+  box-shadow: 0 0 0 3px var(--color-success);
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.photo-crop__controls:focus-within label.btn {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* `hidden` must win over the display rules above */
+.photo-crop__stage[hidden],
+.photo-crop__empty[hidden],
+.photo-crop__zoom[hidden] {
+  display: none;
+}

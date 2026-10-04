@@ -16,6 +16,7 @@ import { supabase } from "./supabase.js";
 import { AuthService } from "./auth.js";
 import { BUSINESS } from "./config.js";
 import { renderBadge, downloadPng, downloadPdf } from "./badge.js";
+import { createCropper, photoUrl, uploadPhoto, removePhoto } from "./photo.js";
 import { formatCurrency, formatNumber, formatDate, formatDateTime, escapeHtml, showToast, setButtonLoading } from "./utils.js";
 
 const referralLink = (code) => `${BUSINESS.website}/?ref=${encodeURIComponent(code)}`;
@@ -63,6 +64,8 @@ function applyFormHtml(d, defaultName) {
           <span class="form-hint">Shown on your badge and verification page.</span></div>
         <div class="form-field"><label for="amb-why">How will you promote BTECH SMM?</label>
           <textarea id="amb-why" name="motivation" rows="4" maxlength="1000" placeholder="Tell us about your audience or community."></textarea></div>
+        <div class="form-field"><label>Profile photo</label><div data-photo-cropper></div></div>
+        <label class="checkbox-row" style="margin-bottom:var(--sp-5)"><input type="checkbox" name="consent" /> I agree that my photo, name and Ambassador ID may appear on my BTECH SMM badge and its public verification page.</label>
         <button type="submit" class="btn btn--primary btn--block">Submit application</button>
       </form></div></div>`;
 }
@@ -97,7 +100,7 @@ function dashboardHtml(d) {
   return `
     <div class="amb-hero">
       <div class="amb-hero__id">
-        <span class="amb-avatar" aria-hidden="true">${escapeHtml(initials(d.display_name))}</span>
+        ${d.photo_path ? `<img class="amb-avatar amb-avatar--img" src="${escapeHtml(photoUrl(d.photo_path))}" alt="" />` : `<span class="amb-avatar" aria-hidden="true">${escapeHtml(initials(d.display_name))}</span>`}
         <div>
           <h2 class="amb-hero__name">${escapeHtml(d.display_name)}</h2>
           <span class="badge badge--status badge--${STATUS_BADGE[d.status]}">${STATUS_LABEL[d.status]}</span>
@@ -202,8 +205,8 @@ async function paneWithdrawals(el, d, reload) {
       <button type="submit" class="btn btn--primary">Request withdrawal</button>
     </form>`}
     ${table(["Requested", "Amount", "Status", "Reference / note"],
-      (data || []).map((w) => `<tr><td data-label="Requested">${formatDateTime(w.requested_at)}</td><td data-label="Amount">${formatCurrency(w.amount)}</td><td data-label="Status"><span class="badge badge--status badge--${{ pending: "pending", approved: "processing", paid: "completed", rejected: "cancelled" }[w.status]}">${w.status[0].toUpperCase() + w.status.slice(1)}</span></td><td data-label="Reference / note">${escapeHtml(w.payout_reference || w.admin_note || "—")}</td></tr>`),
-      "No withdrawals yet.")}`;
+    (data || []).map((w) => `<tr><td data-label="Requested">${formatDateTime(w.requested_at)}</td><td data-label="Amount">${formatCurrency(w.amount)}</td><td data-label="Status"><span class="badge badge--status badge--${{ pending: "pending", approved: "processing", paid: "completed", rejected: "cancelled" }[w.status]}">${w.status[0].toUpperCase() + w.status.slice(1)}</span></td><td data-label="Reference / note">${escapeHtml(w.payout_reference || w.admin_note || "—")}</td></tr>`),
+    "No withdrawals yet.")}`;
 
   const form = el.querySelector("[data-amb-withdraw]");
   form?.addEventListener("submit", async (e) => {
@@ -230,15 +233,59 @@ async function paneBadge(el, d) {
       <button type="button" class="btn btn--primary" data-amb-png>Download Badge (PNG)</button>
       <button type="button" class="btn btn--secondary" data-amb-pdf>Download as PDF</button>
     </div>
-    <p class="form-hint" style="margin-top:var(--sp-3)">The QR code opens your public verification page, which shows only your name, Ambassador ID, referral code and status.</p>`;
+    <p class="form-hint" style="margin-top:var(--sp-3)">The QR code opens your public verification page, which shows only your photo, name, Ambassador ID, referral code and status.</p>
+    <details class="amb-photo-change" ${d.photo_path ? "" : "open"} style="margin-top:var(--sp-4)">
+      <summary>${d.photo_path ? "Change my photo" : "Add my photo"}</summary>
+      ${photoChangeHtml()}
+    </details>`;
+  wirePhotoChange(el, () => initAmbassadorPage());
   const canvas = el.querySelector("[data-amb-canvas]");
   await renderBadge(canvas, {
     displayName: d.display_name, ambassadorCode: d.ambassador_code, referralCode: d.referral_code,
     status: d.status, issuedAt: d.approved_at, verifyUrl: verifyLink(d.ambassador_code), business: BUSINESS,
+    photoUrl: photoUrl(d.photo_path),
   });
   const file = `BTECH-SMM-Ambassador-${d.ambassador_code}`;
   el.querySelector("[data-amb-png]").addEventListener("click", () => downloadPng(canvas, `${file}.png`).then(() => showToast("Badge downloaded.", "success")).catch(() => showToast("Couldn't export the badge.", "error")));
   el.querySelector("[data-amb-pdf]").addEventListener("click", () => downloadPdf(canvas, `${file}.pdf`).then(() => showToast("Badge downloaded.", "success")).catch(() => showToast("Couldn't export the badge.", "error")));
+}
+
+/* ------------------------------ photo change ------------------------------ */
+function photoChangeHtml() {
+  return `<form data-amb-photo novalidate style="margin-top:var(--sp-3)">
+    <div data-photo-cropper></div>
+    <p class="form-error" data-form-error role="alert"></p>
+    <button type="submit" class="btn btn--primary btn--sm">Save photo</button>
+  </form>`;
+}
+
+function wirePhotoChange(scope, done) {
+  const form = scope.querySelector("[data-amb-photo]");
+  if (!form) return;
+  const cropper = createCropper(form.querySelector("[data-photo-cropper]"));
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = form.querySelector("[data-form-error]");
+    err.textContent = "";
+    if (!cropper.hasImage()) return void (err.textContent = "Choose a photo first.");
+    const btn = form.querySelector("[type=submit]");
+    setButtonLoading(btn, true, "Saving…");
+    let path = null;
+    try {
+      path = await uploadPhoto(await cropper.getBlob());
+      const { data, error } = await supabase.rpc("update_ambassador_photo", { p_photo_path: path });
+      if (error) throw new Error(error.message || "Couldn't save your photo.");
+      await removePhoto(data?.old_path); // the old file is no longer referenced
+    } catch (ex) {
+      await removePhoto(path);
+      setButtonLoading(btn, false);
+      err.textContent = ex.message;
+      return;
+    }
+    setButtonLoading(btn, false);
+    showToast("Photo updated.", "success");
+    done();
+  });
 }
 
 /* --------------------------------- init ---------------------------------- */
@@ -253,23 +300,34 @@ export async function initAmbassadorPage() {
   }
 
   const defaultName = (AuthService.getCurrentUser()?.name || "").trim();
-  const wireApply = () =>
-    root.querySelector("[data-amb-apply]")?.addEventListener("submit", async (e) => {
+  const wireApply = () => {
+    const form = root.querySelector("[data-amb-apply]");
+    if (!form) return;
+    const cropper = createCropper(form.querySelector("[data-photo-cropper]"));
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const f = e.target;
-      const err = f.querySelector("[data-form-error]");
+      const err = form.querySelector("[data-form-error]");
       err.textContent = "";
-      const btn = f.querySelector("[type=submit]");
+      if (!cropper.hasImage()) return void (err.textContent = "Please add a profile photo.");
+      if (!form.consent.checked) return void (err.textContent = "Please confirm that your photo may appear on your badge.");
+      const btn = form.querySelector("[type=submit]");
       setButtonLoading(btn, true, "Submitting…");
-      const { error: apErr } = await supabase.rpc("apply_for_ambassador", { p_display_name: f.display_name.value, p_motivation: f.motivation.value });
-      setButtonLoading(btn, false);
-      if (apErr) {
-        err.textContent = apErr.message || "Couldn't submit your application.";
+      let path = null;
+      try {
+        path = await uploadPhoto(await cropper.getBlob());
+        const { error: apErr } = await supabase.rpc("apply_for_ambassador", { p_display_name: form.display_name.value, p_motivation: form.motivation.value, p_photo_path: path });
+        if (apErr) throw new Error(apErr.message || "Couldn't submit your application.");
+      } catch (ex) {
+        await removePhoto(path); // don't leave an unused upload behind
+        setButtonLoading(btn, false);
+        err.textContent = ex.message;
         return;
       }
+      setButtonLoading(btn, false);
       showToast("Application submitted.", "success");
       initAmbassadorPage();
     });
+  };
 
   if (!d.exists) {
     root.innerHTML = d.program_enabled
@@ -278,7 +336,11 @@ export async function initAmbassadorPage() {
     return void wireApply();
   }
   if (d.status === "applicant") {
-    root.innerHTML = noticeHtml("Application under review", `Thanks, ${escapeHtml(d.display_name)}. We received your application on ${formatDate(d.applied_at)} and will notify you once it has been reviewed.`);
+    root.innerHTML =
+      noticeHtml("Application under review", `Thanks, ${escapeHtml(d.display_name)}. We received your application on ${formatDate(d.applied_at)} and will notify you once it has been reviewed.`,
+        d.photo_path ? `<img class="amb-avatar amb-avatar--img amb-avatar--lg" src="${escapeHtml(photoUrl(d.photo_path))}" alt="Your submitted photo" />` : `<p class="form-error">A profile photo is required before approval. Please add one below.</p>`) +
+      `<div class="panel"><div class="panel__body panel__body--padded"><details class="amb-photo-change" ${d.photo_path ? "" : "open"}><summary>${d.photo_path ? "Change my photo" : "Add my photo"}</summary>${photoChangeHtml()}</details></div></div>`;
+    wirePhotoChange(root, () => initAmbassadorPage());
     return;
   }
   if (d.status === "rejected") {
@@ -353,6 +415,7 @@ export async function initVerifyPage() {
     <div class="verify-card ${ok ? "verify-card--ok" : "verify-card--bad"}">
       <span class="verify-seal" aria-hidden="true">${ok ? "✓" : "!"}</span>
       <p class="eyebrow">${escapeHtml(BUSINESS.name)}</p>
+      ${ok && data.photo_path ? `<img class="verify-photo" src="${escapeHtml(photoUrl(data.photo_path))}" alt="Photo of ${escapeHtml(data.display_name)}" />` : ""}
       <h2>${ok ? "Verified Ambassador" : `Ambassador ${escapeHtml(data.status)}`}</h2>
       ${ok ? "" : `<p>This ambassador is not currently active. They are not authorised to represent ${escapeHtml(BUSINESS.name)} right now.</p>`}
       <dl class="verify-meta">
