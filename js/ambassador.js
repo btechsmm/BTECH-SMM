@@ -250,6 +250,16 @@ async function paneBadge(el, d) {
   el.querySelector("[data-amb-pdf]").addEventListener("click", () => downloadPdf(canvas, `${file}.pdf`).then(() => showToast("Badge downloaded.", "success")).catch(() => showToast("Couldn't export the badge.", "error")));
 }
 
+/** The photo doubles as the account avatar: reload the cached profile and repaint the header. */
+async function refreshAvatar() {
+  try {
+    await AuthService.refreshProfile();
+    window.dispatchEvent(new CustomEvent("btech:profile-updated"));
+  } catch {
+    /* the avatar will catch up on the next page load */
+  }
+}
+
 /* ------------------------------ photo change ------------------------------ */
 function photoChangeHtml() {
   return `<form data-amb-photo novalidate style="margin-top:var(--sp-3)">
@@ -284,6 +294,7 @@ function wirePhotoChange(scope, done) {
     }
     setButtonLoading(btn, false);
     showToast("Photo updated.", "success");
+    await refreshAvatar();
     done();
   });
 }
@@ -325,6 +336,7 @@ export async function initAmbassadorPage() {
       }
       setButtonLoading(btn, false);
       showToast("Application submitted.", "success");
+      await refreshAvatar();
       initAmbassadorPage();
     });
   };

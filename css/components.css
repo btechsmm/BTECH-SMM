@@ -370,6 +370,7 @@
 }
 
 .avatar {
+  overflow: hidden;
   width: 38px;
   height: 38px;
   border-radius: var(--radius-full);
@@ -3391,4 +3392,13 @@ a.ins-link:hover {
 .photo-crop__empty[hidden],
 .photo-crop__zoom[hidden] {
   display: none;
+}
+
+/* Account avatar photo */
+.avatar__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
 }

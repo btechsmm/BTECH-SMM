@@ -8,6 +8,7 @@
 import { supabase } from "./supabase.js";
 import { AuthService } from "./auth.js";
 import { isValidEmail, showToast, setButtonLoading } from "./utils.js";
+import { avatarInner } from "./avatar.js";
 
 export function initProfilePage() {
   const form = document.querySelector("[data-profile-form]");
@@ -22,12 +23,9 @@ export function initProfilePage() {
 
   const initialsEl = document.querySelector("[data-profile-initials]");
   if (initialsEl) {
-    initialsEl.textContent = (user.name || "U")
-      .split(" ")
-      .map((p) => p[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
+    const paint = () => (initialsEl.innerHTML = avatarInner(AuthService.getCurrentUser() || user));
+    paint();
+    window.addEventListener("btech:profile-updated", paint);
   }
   const memberSince = document.querySelector("[data-member-since]");
   if (memberSince && user.createdAt) {

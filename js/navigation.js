@@ -40,7 +40,8 @@ import { AuthService } from "./auth.js";
 import { NotificationsService } from "./notifications.js";
 import { WHATSAPP_NUMBER, WHATSAPP_DEFAULT_MESSAGE, BUSINESS } from "./config.js";
 import { fetchWalletBalance } from "./wallet-pay.js";
-import { formatCurrency } from "./utils.js";
+import { formatCurrency, escapeHtml } from "./utils.js";
+import { avatarInner } from "./avatar.js";
 
 const MARKETING_LINKS = [
   { href: "index.html", label: "Home", key: "home" },
@@ -150,12 +151,6 @@ function marketingHeader(activeKey) {
 // ---------------------------------------------------------------------------
 function adminHeader(activeKey) {
   const user = AuthService.getCurrentUser();
-  const initials = (user?.name || "U")
-    .split(" ")
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
   const links = APP_LINKS.map(
     (l) => `<a href="${l.href}" class="app-nav-link ${l.key === activeKey ? "app-nav-link--active" : ""}">${l.label}</a>`
   ).join("");
@@ -172,7 +167,7 @@ function adminHeader(activeKey) {
     </nav>
     <div class="header-actions">
       <button class="icon-btn" type="button" data-theme-toggle aria-label="Toggle dark mode">${ICONS.moon}</button>
-      <a href="profile.html" class="avatar" aria-label="Profile">${initials}</a>
+      <a href="profile.html" class="avatar" aria-label="Profile">${avatarInner(user)}</a>
       <button class="icon-btn nav-toggle" type="button" data-mobile-menu-toggle aria-label="Open menu" aria-expanded="false">${ICONS.menu}</button>
     </div>
   </div>
@@ -234,12 +229,6 @@ function walletPillHtml() {
 }
 
 function customerTopbar(authed, user) {
-  const initials = (user?.name || "U")
-    .split(" ")
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
   return `
   <div class="topbar__inner">
     <button class="icon-btn topbar__menu-btn" type="button" data-mobile-menu-toggle aria-label="Open menu" aria-expanded="false">${ICONS.menu}</button>
@@ -263,8 +252,8 @@ function customerTopbar(authed, user) {
       ${authed && user?.role === "admin" ? `<a href="admin.html" class="admin-portal-btn">${ICONS.shield}<span>Admin Portal</span></a>` : ""}
       ${authed
       ? `<a href="profile.html" class="topbar__profile" aria-label="Profile">
-          <span class="avatar avatar--sm">${initials}</span>
-          <span class="topbar__profile-name">${user?.name || "Account"}</span>
+          <span class="avatar avatar--sm">${avatarInner(user)}</span>
+          <span class="topbar__profile-name">${escapeHtml(user?.name || "Account")}</span>
           <span class="topbar__profile-caret" aria-hidden="true">${ICONS.caret}</span>
         </a>`
       : `<a href="login.html" class="nav-link nav-link--login">Login</a><a href="register.html" class="btn btn--primary btn--sm">Get Started</a>`
@@ -429,7 +418,19 @@ function wireInteractions(root = document) {
   }
 }
 
+// When the user's photo changes (Ambassador page), refresh the header avatars in place.
+let avatarListenerBound = false;
+function bindAvatarRefresh() {
+  if (avatarListenerBound) return;
+  avatarListenerBound = true;
+  window.addEventListener("btech:profile-updated", () => {
+    const u = AuthService.getCurrentUser();
+    document.querySelectorAll(".topbar__profile .avatar, a.avatar[aria-label='Profile']").forEach((el) => (el.innerHTML = avatarInner(u)));
+  });
+}
+
 export function initNavigation() {
+  bindAvatarRefresh();
   const body = document.body;
   const navType = body.dataset.nav || "marketing";
   const activeKey = body.dataset.page || "";

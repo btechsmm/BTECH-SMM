@@ -23,8 +23,24 @@ let _session = null;
 let _profile = null;
 let _initialized = false;
 
+// The account avatar is the user's Ambassador Program photo. It is read from their own
+// ambassadors row (RLS: own row only), so it is exactly what the database validated.
+// Rejected/deactivated accounts fall back to initials. Any failure just means "no photo".
+const AVATAR_STATUSES = ["applicant", "approved", "suspended"];
+async function loadAvatarPath(userId) {
+  try {
+    const { data } = await supabase.from("ambassadors").select("photo_path,status").eq("user_id", userId).maybeSingle();
+    return data && AVATAR_STATUSES.includes(data.status) ? data.photo_path || null : null;
+  } catch {
+    return null;
+  }
+}
+
 async function loadProfile(userId) {
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
+  const [{ data, error }, avatarPath] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", userId).single(),
+    loadAvatarPath(userId),
+  ]);
   if (error) {
     console.error("Failed to load profile:", error);
     return null;
@@ -36,6 +52,7 @@ async function loadProfile(userId) {
     phone: data.phone,
     role: data.role,
     createdAt: data.created_at,
+    avatarPath,
   };
 }
 

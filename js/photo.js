@@ -12,16 +12,14 @@
 
 import { supabase } from "./supabase.js";
 import { AuthService } from "./auth.js";
+import { photoUrl, PHOTO_BUCKET } from "./avatar.js";
 
-const BUCKET = "ambassador-photos";
+export { photoUrl };
+
+const BUCKET = PHOTO_BUCKET;
 const VIEW = 260; // on-screen crop size (px)
 const OUT = 600; // uploaded size (px)
 const MAX_INPUT_BYTES = 12 * 1024 * 1024;
-
-export function photoUrl(path) {
-  if (!path) return null;
-  return supabase.storage.from(BUCKET).getPublicUrl(path).data?.publicUrl || null;
-}
 
 /** Uploads a JPEG blob to the caller's own folder and returns its storage path. */
 export async function uploadPhoto(blob) {
