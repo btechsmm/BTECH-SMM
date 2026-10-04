@@ -963,6 +963,7 @@
 .auth-card {
   max-width: 440px;
   margin: var(--sp-10) auto;
+  margin-top: 70px;
 }
 
 .auth-card__logo {
