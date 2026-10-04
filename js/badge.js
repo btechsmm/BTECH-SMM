@@ -15,6 +15,9 @@ import { qrMatrix } from "./qr.js";
 export const BADGE_W = 1600;
 export const BADGE_H = 1009;
 
+// Header band colour. The app's CSS has no maroon to reuse, so this is the one place to set the brand hex.
+const HEADER_MAROON = "#7b1e2e";
+
 const C = {
   navy: "#0b2148",
   navyDeep: "#071a3d",
@@ -56,6 +59,32 @@ function loadImage(src, cors = false) {
     img.onerror = () => resolve(null);
     img.src = src;
   });
+}
+
+/**
+ * The brand logo is dark/blue artwork, which would disappear on maroon. Redraw it as a
+ * white silhouette: darker pixels become white, near-white pixels (an opaque white
+ * background, or the logo's own light highlights) become transparent.
+ */
+function whiteLogo(img, w, h) {
+  const scale = 2; // work at 2x so the edges stay crisp on the 1600px card
+  const c = document.createElement("canvas");
+  c.width = Math.round(w * scale);
+  c.height = Math.round(h * scale);
+  const x = c.getContext("2d");
+  x.drawImage(img, 0, 0, c.width, c.height);
+  const px = x.getImageData(0, 0, c.width, c.height);
+  const d = px.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const ink = 1 - Math.min(d[i], d[i + 1], d[i + 2]) / 255;
+    const alpha = (d[i + 3] / 255) * Math.min(1, ink * 1.6);
+    d[i] = 255;
+    d[i + 1] = 255;
+    d[i + 2] = 255;
+    d[i + 3] = Math.round(alpha * 255);
+  }
+  x.putImageData(px, 0, 0);
+  return c;
 }
 
 function fitText(ctx, text, maxWidth, size, weight) {
@@ -104,23 +133,23 @@ export async function renderBadge(canvas, data) {
   ctx.fillStyle = C.navy;
   ctx.fillRect(0, 0, BADGE_W, BADGE_H);
 
-  // Header band
-  ctx.fillStyle = C.white;
+  // Header band: solid maroon, so the top of the card stands apart from the page behind it
+  ctx.fillStyle = HEADER_MAROON;
   ctx.fillRect(0, 0, BADGE_W, 150);
   ctx.fillStyle = C.blue;
   ctx.fillRect(0, 150, BADGE_W, 10);
   if (logo) {
     const h = 64;
     const w = (logo.width / logo.height) * h;
-    ctx.drawImage(logo, 70, 43, w, h);
+    ctx.drawImage(whiteLogo(logo, w, h), 70, 43, w, h);
   } else {
-    ctx.fillStyle = C.navy;
+    ctx.fillStyle = C.white;
     ctx.font = `800 54px ${FONT}`;
     ctx.textBaseline = "alphabetic";
     ctx.fillText("BTECH SMM", 70, 100);
   }
   ctx.textAlign = "right";
-  ctx.fillStyle = C.navy;
+  ctx.fillStyle = C.white;
   ctx.font = `700 30px ${FONT}`;
   ctx.fillText("OFFICIAL AMBASSADOR ID", BADGE_W - 70, 92);
   ctx.textAlign = "left";

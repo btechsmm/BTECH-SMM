@@ -105,7 +105,7 @@ begin
   end if;
 
   insert into public.notifications (user_id, type, title, text)
-  values (v_uid, 'system', 'Application received', 'Your BTECH SMM Ambassador application is being reviewed.');
+  values (v_uid, 'system', 'Application received', 'Your bassador application is being reviewed.');
   return a;
 end;
 $$;

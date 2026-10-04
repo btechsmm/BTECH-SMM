@@ -193,6 +193,7 @@ h4 {
    headings never feel oversized/cramped on any of 320/360/390/430px. */
 h1 {
   font-size: clamp(1.5rem, 4.5vw + 0.7rem, var(--fs-3xl));
+  margin-top: var(--sp-5);
 }
 
 h2 {

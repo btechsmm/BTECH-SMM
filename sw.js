@@ -30,7 +30,7 @@
  * handler.
  */
 
-const CACHE_VERSION = "btechsmm-v15";
+const CACHE_VERSION = "btechsmm-v16";
 const PRECACHE_URLS = [
   "index.html",
   "services.html",
@@ -52,6 +52,9 @@ const PRECACHE_URLS = [
   "css/dashboard.css",
   "css/responsive.css",
   "js/app.js",
+  "js/main.js",
+  "js/shell.js",
+  "js/sidebar.js",
   "js/navigation.js",
   "js/auth.js",
   "js/auth-forms.js",

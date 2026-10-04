@@ -3402,3 +3402,53 @@ a.ins-link:hover {
   object-fit: cover;
   border-radius: inherit;
 }
+
+/* ==========================================================================
+   First-paint shell for customer pages
+   body[data-nav="customer"] is in the HTML, so the sidebar column, the top bar
+   and the content offset can be drawn before any JavaScript has run. When
+   shell.js adds .has-sidebar these rules stop applying and the real sidebar
+   (same size, position and colour) takes over with no visible change.
+   ========================================================================== */
+body[data-nav="customer"]:not(.has-sidebar) main {
+  padding-top: var(--header-height);
+}
+
+body[data-nav="customer"]:not(.has-sidebar) #site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-height);
+  background: color-mix(in srgb, var(--surface-card) 96%, transparent);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 210;
+}
+
+@media (min-width: 768px) {
+  body[data-nav="customer"]:not(.has-sidebar)::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    background: var(--sidebar-navy);
+    z-index: 220;
+  }
+
+  body[data-nav="customer"]:not(.has-sidebar) #site-header {
+    left: var(--sidebar-width);
+  }
+
+  body[data-nav="customer"]:not(.has-sidebar) main,
+  body[data-nav="customer"]:not(.has-sidebar) #site-footer {
+    margin-left: var(--sidebar-width);
+  }
+}
+
+@media (max-width: 767px) {
+  body[data-nav="customer"]:not(.has-sidebar) main {
+    padding-bottom: calc(var(--bottom-nav-height) + var(--sp-6));
+  }
+}
