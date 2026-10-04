@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — BTECH SMM</title>
+  <link rel="icon" type="image/png" href="assets/brand/icon-32.png" />
+  <link rel="apple-touch-icon" href="assets/brand/icon-180.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0A84FF" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+
+<body data-page="admin" data-nav="admin" data-requires-auth="true">
+  <a href="#main" class="skip-link">Skip to content</a>
+  <header id="site-header"></header>
+
+  <main id="main">
+    <div class="container section--tight section">
+      <div class="adash" data-adash>
+        <div class="page-head adash-head">
+          <div>
+            <h1>Admin Dashboard</h1>
+            <p class="muted">Monitor BTECH SMM activity, revenue and operations.</p>
+          </div>
+          <div class="adash-controls">
+            <div class="adash-seg" role="group" aria-label="Date range">
+              <button type="button" data-range="7d" aria-pressed="false" title="Last 7 days">7D</button>
+              <button type="button" data-range="30d" aria-pressed="true" title="Last 30 days">30D</button>
+              <button type="button" data-range="90d" aria-pressed="false" title="Last 90 days">90D</button>
+              <button type="button" data-range="12m" aria-pressed="false" title="Last 12 months">12M</button>
+              <button type="button" data-range="all" aria-pressed="false" title="All time">All</button>
+            </div>
+            <button type="button" class="icon-btn adash-refresh" data-adash-refresh aria-label="Refresh dashboard data"
+              title="Refresh dashboard data">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 12a8 8 0 1 1-2.3-5.7" />
+                <path d="M20 4v5h-5" />
+              </svg>
+            </button>
+            <span class="adash-updated" data-adash-updated></span>
+          </div>
+        </div>
+
+        <nav class="admin-nav" aria-label="Admin sections">
+          <a href="#overview" class="is-active">Dashboard</a>
+          <a href="#orders-section">Orders</a>
+          <a href="#cancellations-section">Cancellations</a>
+          <a href="#refunds-section">Refunds</a>
+          <a href="#services-section">Services</a>
+          <a href="#provider-section">Provider</a>
+          <a href="#users-section">Users</a>
+          <a href="#ambassadors-section">Ambassadors</a>
+          <a href="insights.html">Insights</a>
+          <a href="#loyalty-section">Loyalty</a>
+          <a href="#settings-section">Settings</a>
+        </nav>
+
+        <section class="adash-section" id="overview" aria-labelledby="adash-h-overview">
+          <h2 class="adash-h" id="adash-h-overview">Overview <span class="adash-h__meta" data-adash-range-label></span>
+          </h2>
+          <div class="adash-kpis" data-adash-kpis>
+            <div class="skeleton" style="height:96px"></div>
+            <div class="skeleton" style="height:96px"></div>
+            <div class="skeleton" style="height:96px"></div>
+          </div>
+        </section>
+
+        <section class="adash-section" aria-labelledby="adash-h-attn">
+          <h2 class="adash-h" id="adash-h-attn">Needs attention</h2>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <p class="stat-card__label">Cancellation requests</p>
+              <p class="stat-card__value" data-admin-cancellations-count>0</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-card__label">Refund requests</p>
+              <p class="stat-card__value" data-admin-refunds-count>0</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-card__label">Open support tickets</p>
+              <p class="stat-card__value" data-admin-tickets>0</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-card__label">Active services</p>
+              <p class="stat-card__value" data-admin-services>0</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="adash-section" aria-labelledby="adash-h-rev">
+          <h2 class="adash-h" id="adash-h-rev">Revenue &amp; Sales</h2>
+          <div class="panel adash-card">
+            <div class="panel__head">
+              <h3>Revenue Trend</h3><span class="adash-card__meta" data-adash-range-label></span>
+            </div>
+            <div class="panel__body panel__body--padded" data-adash-revenue>
+              <div class="skeleton" style="height:280px"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="adash-section" aria-labelledby="adash-h-ord">
+          <h2 class="adash-h" id="adash-h-ord">Order Performance</h2>
+          <div class="adash-grid-2">
+            <div class="panel adash-card">
+              <div class="panel__head">
+                <h3>Order Activity</h3><span class="adash-card__meta" data-adash-range-label></span>
+              </div>
+              <div class="panel__body panel__body--padded" data-adash-activity>
+                <div class="skeleton" style="height:240px"></div>
+              </div>
+            </div>
+            <div class="panel adash-card">
+              <div class="panel__head">
+                <h3>Order Status</h3><span class="adash-card__meta" data-adash-range-label></span>
+              </div>
+              <div class="panel__body panel__body--padded" data-adash-status>
+                <div class="skeleton" style="height:200px"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="adash-section" aria-labelledby="adash-h-biz">
+          <h2 class="adash-h" id="adash-h-biz">Service Performance</h2>
+          <div class="adash-grid-2">
+            <div class="panel adash-card">
+              <div class="panel__head">
+                <h3>Top Services</h3><span class="adash-card__meta" data-adash-range-label></span>
+              </div>
+              <div class="panel__body panel__body--padded" data-adash-top>
+                <div class="skeleton" style="height:200px"></div>
+              </div>
+            </div>
+            <div class="panel adash-card">
+              <div class="panel__head">
+                <h3>Platform Performance</h3><span class="adash-card__meta" data-adash-range-label></span>
+              </div>
+              <div class="panel__body panel__body--padded" data-adash-platform>
+                <div class="skeleton" style="height:200px"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="adash-section" aria-labelledby="adash-h-pay">
+          <h2 class="adash-h" id="adash-h-pay">Payments &amp; Wallet</h2>
+          <div class="adash-grid-2">
+            <div class="panel adash-card">
+              <div class="panel__head">
+                <h3>M-Pesa Payment Breakdown</h3><span class="adash-card__meta" data-adash-range-label></span>
+              </div>
+              <div class="panel__body panel__body--padded" data-adash-payments>
+                <div class="skeleton" style="height:200px"></div>
+              </div>
+            </div>
+            <div class="panel adash-card">
+              <div class="panel__head">
+                <h3>Wallet Deposits</h3><span class="adash-card__meta" data-adash-range-label></span>
+              </div>
+              <div class="panel__body panel__body--padded" data-adash-wallet>
+                <div class="skeleton" style="height:240px"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="adash-section" aria-labelledby="adash-h-ops">
+          <h2 class="adash-h" id="adash-h-ops">Operations</h2>
+
+          <div id="orders-section" class="panel" style="margin-bottom:var(--sp-8)">
+            <div class="panel__head">
+              <h3>Recent orders</h3><a href="orders.html" class="link-btn">View all</a>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Service</th>
+                    <th>Amount</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Provider</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody data-admin-orders-body></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="adash-section" aria-labelledby="adash-h-qa">
+          <h2 class="adash-h" id="adash-h-qa">Quick Actions</h2>
+          <div class="adash-actions">
+            <a class="quick-action" href="#orders-section"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+                <path d="M8 9h8M8 13h8M8 17h5" />
+              </svg><span>Manage Orders</span></a>
+            <a class="quick-action" href="#cancellations-section"><svg viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M8 8l8 8M16 8l-8 8" />
+              </svg><span>Cancellations</span></a>
+            <a class="quick-action" href="#refunds-section"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 12a8 8 0 1 1 3 6.2" />
+                <path d="M4 18v-5h5" />
+              </svg><span>Refunds</span></a>
+            <a class="quick-action" href="#services-section"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 6h16M4 12h16M4 18h10" />
+              </svg><span>Manage Services</span></a>
+            <a class="quick-action" href="#provider-section"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
+              </svg><span>Provider / Delix</span></a>
+            <a class="quick-action" href="#users-section"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="9" cy="8" r="3.5" />
+                <path d="M2.5 20c.6-3.5 3.2-5.5 6.5-5.5s5.9 2 6.5 5.5" />
+                <path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.9.7 3.1 2.4 3.5 5.2" />
+              </svg><span>Customers</span></a>
+            <a class="quick-action" href="#loyalty-section"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9L12 3.5z" />
+              </svg><span>Loyalty</span></a>
+            <a class="quick-action" href="#settings-section"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1" />
+              </svg><span>Settings</span></a>
+          </div>
+        </section>
+      </div>
+
+      <div id="cancellations-section" class="panel" style="margin-bottom:var(--sp-8)">
+        <div class="panel__head">
+          <h3>Cancellation requests</h3>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Reason</th>
+                <th>Requested</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody data-admin-cancellations-body></tbody>
+          </table>
+        </div>
+        <div class="empty-state empty-state--compact" data-admin-cancellations-empty hidden>
+          <p>No cancellation requests.</p>
+        </div>
+      </div>
+
+      <div id="refunds-section" class="panel" style="margin-bottom:var(--sp-8)">
+        <div class="panel__head">
+          <h3>Refund requests</h3>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Reason</th>
+                <th>Requested</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody data-admin-refunds-body></tbody>
+          </table>
+        </div>
+        <div class="empty-state empty-state--compact" data-admin-refunds-empty hidden>
+          <p>No refund requests.</p>
+        </div>
+        <p class="form-hint" style="padding:0 var(--sp-5) var(--sp-4)">Approving a refund only records it as approved —
+          no automatic M-Pesa transfer happens until that integration exists.</p>
+      </div>
+
+      <div id="services-section" class="panel" style="margin-bottom:var(--sp-8)">
+        <div class="panel__head">
+          <h3>Services</h3>
+          <div style="display:flex;gap:var(--sp-2);align-items:center;flex-wrap:wrap">
+            <input type="search" class="admin-users-search" placeholder="Search services…" data-admin-services-search
+              style="max-width:200px" />
+            <button type="button" class="btn btn--primary btn--sm" data-add-service>Add Service</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Provider mapping</th>
+                <th>Provider cost</th>
+                <th>BTECH price</th>
+                <th>Margin</th>
+                <th>Min–Max</th>
+                <th>Active</th>
+                <th>Visible</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody data-admin-services-body></tbody>
+          </table>
+        </div>
+        <div class="empty-state empty-state--compact" data-admin-services-empty hidden>
+          <p>No services match your search.</p>
+        </div>
+        <p class="form-hint" style="padding:0 var(--sp-5) var(--sp-4)">Margin can't be computed automatically — provider
+          cost is in USD and BTECH price is in KES, and this app deliberately never invents an exchange rate.</p>
+      </div>
+
+      <div class="modal-overlay" data-service-modal hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="service-modal-title"
+          style="max-width:560px">
+          <div class="modal__head">
+            <h3 id="service-modal-title" data-service-modal-title>Add Service</h3>
+            <button class="icon-btn" type="button" data-service-modal-close aria-label="Close">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
+          <form data-service-form novalidate style="max-height:70vh;overflow-y:auto;padding-right:4px">
+            <p class="form-error" data-form-error role="alert"></p>
+            <input type="hidden" name="id" />
+            <div class="form-field">
+              <label for="svc-name">Name</label>
+              <input id="svc-name" name="name" type="text" required />
+            </div>
+            <div class="form-field">
+              <label for="svc-description">Customer-facing description</label>
+              <textarea id="svc-description" name="description" rows="2"></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)">
+              <div class="form-field">
+                <label for="svc-platform">Platform</label>
+                <input id="svc-platform" name="platform" list="svc-platform-options" required
+                  placeholder="e.g. tiktok" />
+                <datalist id="svc-platform-options"></datalist>
+                <span class="form-hint">Pick an existing one, or type a brand-new platform — no code change
+                  needed.</span>
+              </div>
+              <div class="form-field">
+                <label for="svc-category">Service type</label>
+                <input id="svc-category" name="category" list="svc-category-options" required
+                  placeholder="e.g. views" />
+                <datalist id="svc-category-options"></datalist>
+                <span class="form-hint">This is the "Views / Followers / Likes…" grouping customers browse by.</span>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)">
+              <div class="form-field">
+                <label for="svc-price">BTECH price (KES / 1000)</label>
+                <input id="svc-price" name="price_per_1000" type="number" min="0.01" step="0.01" required />
+              </div>
+              <div class="form-field">
+                <label for="svc-display-order">Display order</label>
+                <input id="svc-display-order" name="display_order" type="number" step="1" value="0" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)">
+              <div class="form-field">
+                <label for="svc-min">Minimum quantity</label>
+                <input id="svc-min" name="min_quantity" type="number" min="1" step="1" required />
+              </div>
+              <div class="form-field">
+                <label for="svc-max">Maximum quantity</label>
+                <input id="svc-max" name="max_quantity" type="number" min="1" step="1" required />
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:var(--sp-4);margin-bottom:var(--sp-5)">
+              <label class="checkbox-row"><input type="checkbox" name="active" checked /> Active (purchasable)</label>
+              <label class="checkbox-row"><input type="checkbox" name="visible" checked /> Visible (shown in
+                catalogue)</label>
+              <label class="checkbox-row"><input type="checkbox" name="featured" /> Featured</label>
+              <label class="checkbox-row"><input type="checkbox" name="refill_enabled" /> Refill offered</label>
+              <label class="checkbox-row"><input type="checkbox" name="cancel_enabled" /> Cancellation offered</label>
+            </div>
+            <button type="submit" class="btn btn--primary btn--block">Save Service</button>
+          </form>
+        </div>
+      </div>
+
+      <div id="provider-section" class="panel" style="margin-bottom:var(--sp-8)">
+        <div class="panel__head">
+          <h3>Provider — Delix Gains</h3>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button type="button" class="btn btn--secondary btn--sm" data-provider-test>Test Connection</button>
+            <button type="button" class="btn btn--secondary btn--sm" data-provider-sync>Sync Services</button>
+            <button type="button" class="btn btn--secondary btn--sm" data-provider-balance>Check Balance</button>
+          </div>
+        </div>
+        <div class="stat-grid" style="padding:var(--sp-5)">
+          <div class="stat-card">
+            <p class="stat-card__label">Connection</p>
+            <p class="stat-card__value" data-provider-connection style="font-size:var(--fs-md)">Not checked</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-card__label">Services</p>
+            <p class="stat-card__value" data-provider-services-status style="font-size:var(--fs-md)">—</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-card__label">Balance</p>
+            <p class="stat-card__value" data-provider-balance-value style="font-size:var(--fs-md)">—</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-card__label">Last checked</p>
+            <p class="stat-card__value" data-provider-checked-at style="font-size:var(--fs-md)">Never</p>
+          </div>
+        </div>
+        <p class="form-hint" style="padding:0 var(--sp-5) var(--sp-2)" data-provider-message></p>
+
+        <div class="panel__head" style="border-top:1px solid var(--border-color)">
+          <h3>Service mappings</h3>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>BTECH Service</th>
+                <th>Delix Service ID</th>
+                <th>Provider Name</th>
+                <th>Rate (USD)</th>
+                <th>Refill / Cancel</th>
+                <th>Status</th>
+                <th>Last Synced</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody data-provider-mappings-body></tbody>
+          </table>
+        </div>
+        <div class="empty-state empty-state--compact" data-provider-mappings-empty hidden>
+          <p>No services are mapped to Delix Gains yet. Browse the catalogue below to map one.</p>
+        </div>
+
+        <div class="panel__head" style="border-top:1px solid var(--border-color)">
+          <h3>Provider catalogue</h3>
+          <input type="search" class="admin-users-search" placeholder="Search by name, category or Delix ID…"
+            data-catalogue-search style="max-width:280px" />
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Delix ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Rate (USD)</th>
+                <th>Min–Max</th>
+                <th>Mapped</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody data-provider-catalogue-body></tbody>
+          </table>
+        </div>
+        <div class="empty-state empty-state--compact" data-provider-catalogue-empty hidden>
+          <p>No provider catalogue yet — click Sync Services to import it from Delix.</p>
+        </div>
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;padding:var(--sp-3) var(--sp-5);gap:var(--sp-3);flex-wrap:wrap">
+          <span class="form-hint" data-catalogue-page-label></span>
+          <div style="display:flex;gap:6px">
+            <button type="button" class="btn btn--secondary btn--sm" data-catalogue-prev>Prev</button>
+            <button type="button" class="btn btn--secondary btn--sm" data-catalogue-next>Next</button>
+          </div>
+        </div>
+        <p class="form-hint" style="padding:0 var(--sp-5) var(--sp-2)">To map: pick a BTECH service below, then click
+          "Map…" next to the Delix service you want to attach it to.</p>
+
+        <form data-provider-map-form novalidate
+          style="padding:var(--sp-5);border-top:1px solid var(--border-color);display:flex;gap:var(--sp-3);flex-wrap:wrap;align-items:flex-end">
+          <div class="form-field" style="margin:0;flex:1 1 220px">
+            <label for="map-service-select">BTECH service</label>
+            <select id="map-service-select" name="service_id" required></select>
+          </div>
+          <div class="form-field" style="margin:0;flex:1 1 160px">
+            <label for="map-provider-ref">Or type a Delix service ID directly</label>
+            <input id="map-provider-ref" name="provider_service_ref" type="text" inputmode="numeric"
+              placeholder="e.g. 7931" />
+          </div>
+          <button type="submit" class="btn btn--primary">Map Service</button>
+        </form>
+        <p class="form-hint" style="padding:0 var(--sp-5) var(--sp-4)">Provider order creation is prepared but not
+          active yet — it stays off until real payment confirmation (M-Pesa) exists.</p>
+      </div>
+
+      <div id="users-section" class="panel" style="margin-bottom:var(--sp-8)">
+        <div class="panel__head">
+          <h3>Users</h3>
+          <input type="search" class="admin-users-search" placeholder="Search by name or email…"
+            aria-label="Search users" data-users-search style="max-width:240px" />
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Joined</th>
+              </tr>
+            </thead>
+            <tbody data-admin-users-body></tbody>
+          </table>
+        </div>
+        <div class="empty-state empty-state--compact" data-admin-users-empty hidden>
+          <p>No users found.</p>
+        </div>
+        <div class="empty-state empty-state--compact" data-admin-users-error hidden>
+          <p>Unable to load users right now. Please try again shortly.</p>
+        </div>
+        <p class="form-hint" style="padding:0 var(--sp-5) var(--sp-4)">Role changes and account suspension aren't built
+          in this pass — this list is read-only, sourced live from Supabase.</p>
+      </div>
+
+      <div id="ambassadors-section" class="panel" style="margin-bottom:var(--sp-8)">
+        <div class="panel__head">
+          <h3>Ambassador Management</h3>
+        </div>
+        <div data-ambassador-admin>
+          <div class="panel__body panel__body--padded">
+            <div class="skeleton" style="height:120px"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="loyalty-section" class="panel" style="margin-bottom:var(--sp-8)">
+        <div class="panel__head">
+          <h3>Loyalty Management</h3>
+        </div>
+        <div data-loyalty-admin>
+          <div class="panel__body panel__body--padded">
+            <div class="skeleton" style="height:120px"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-section" class="panel">
+        <div class="panel__head">
+          <h3>Settings</h3>
+        </div>
+        <div class="empty-state empty-state--compact">
+          <p>Site settings (branding, notifications, payment providers) will read/write the <code>site_settings</code>
+            table — the UI for it is still to be built.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="bottom-nav-slot"></div>
+  <footer id="site-footer"></footer>
+  <script type="module" src="js/app.js"></script>
+</body>
+
+</html>

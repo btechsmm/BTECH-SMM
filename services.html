@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Services — BTECH SMM</title>
+  <meta name="description"
+    content="Browse BTECH SMM social media marketing services across TikTok, Instagram, YouTube, Facebook, X and Telegram." />
+  <link rel="icon" type="image/png" href="assets/brand/icon-32.png" />
+  <link rel="apple-touch-icon" href="assets/brand/icon-180.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0A84FF" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+
+<body data-page="services" data-nav="customer">
+  <a href="#main" class="skip-link">Skip to content</a>
+  <header id="site-header"></header>
+
+  <main id="main">
+    <div class="container section--tight section">
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Catalogue</span>
+          <h1>Services</h1>
+          <p data-services-count class="muted">Loading services…</p>
+        </div>
+      </div>
+
+      <nav aria-label="Breadcrumb" data-services-breadcrumb style="margin-bottom:var(--sp-4);display:none"></nav>
+
+      <div class="filters-bar">
+        <div class="filters-bar__search">
+          <input type="search" placeholder="Search all services…" aria-label="Search services" data-services-search />
+        </div>
+        <select data-sort-filter aria-label="Sort services">
+          <option value="featured">Featured first</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+          <option value="name-asc">Name: A–Z</option>
+        </select>
+      </div>
+
+      <h2 class="catalogue-heading" data-catalogue-heading hidden></h2>
+      <div class="catalogue-tile-grid" data-catalogue-tiles hidden></div>
+
+      <div class="services-grid" data-services-grid></div>
+
+      <div class="empty-state" data-services-empty hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="7" />
+          <path d="M21 21l-4.3-4.3" />
+        </svg>
+        <h3>No services match your filters</h3>
+        <p>Try a different search term or clear your filters.</p>
+      </div>
+    </div>
+  </main>
+
+  <div id="bottom-nav-slot"></div>
+
+  <footer id="site-footer"></footer>
+  <script type="module" src="js/app.js"></script>
+</body>
+
+</html>

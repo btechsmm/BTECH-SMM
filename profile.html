@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile — BTECH SMM</title>
+  <link rel="icon" type="image/png" href="assets/brand/icon-32.png" />
+  <link rel="apple-touch-icon" href="assets/brand/icon-180.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0A84FF" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+
+<body data-page="profile" data-nav="customer" data-requires-auth="true">
+  <a href="#main" class="skip-link">Skip to content</a>
+  <header id="site-header"></header>
+
+  <main id="main">
+    <div class="container section--tight section" style="max-width:1080px">
+      <div class="page-head">
+        <div>
+          <h1>Profile</h1>
+          <p class="muted">Manage your personal details and account.</p>
+        </div>
+      </div>
+
+      <div class="profile-grid">
+        <form class="card" data-profile-form novalidate>
+          <h3 class="section-card__title">Personal information</h3>
+          <p class="form-error" data-form-error role="alert"></p>
+          <div class="form-field">
+            <label for="profile-name">Full name</label>
+            <input id="profile-name" name="name" type="text" required />
+          </div>
+          <div class="form-field">
+            <label for="profile-email">Email address</label>
+            <input id="profile-email" name="email" type="email" required />
+          </div>
+          <div class="form-field">
+            <label for="profile-phone">Phone number (optional)</label>
+            <input id="profile-phone" name="phone" type="tel" placeholder="07xx xxx xxx" />
+          </div>
+          <button type="submit" class="btn btn--primary">Save Changes</button>
+        </form>
+
+        <div class="profile-grid__side">
+          <section class="card" aria-labelledby="account-title">
+            <h3 class="section-card__title" id="account-title">Account</h3>
+            <div class="profile-head" style="margin-bottom:0">
+              <span class="avatar" data-profile-initials>U</span>
+              <div>
+                <p style="margin:0;font-weight:700" data-member-since-label>Member since <span
+                    data-member-since>—</span></p>
+              </div>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="prefs-title">
+            <h3 class="section-card__title" id="prefs-title">Preferences</h3>
+            <div class="setting-row">
+              <div>
+                <strong>Appearance</strong>
+                <p>Switch between light and dark mode.</p>
+              </div>
+              <!-- Reuses the top bar's existing theme toggle instead of a second implementation -->
+              <button type="button" class="btn btn--secondary btn--sm" data-pref-theme>Switch theme</button>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="security-title">
+            <h3 class="section-card__title" id="security-title">Security</h3>
+            <div class="setting-row">
+              <div>
+                <strong>Sign out</strong>
+                <p>End your session on this device.</p>
+              </div>
+              <a href="#" class="btn btn--secondary btn--sm" data-logout style="color: rgb(217, 193, 193) ; background-color: rgba(42, 76, 212, 0.562);">Sign out</a>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="bottom-nav-slot"></div>
+  <footer id="site-footer"></footer>
+  <script type="module" src="js/app.js"></script>
+  <script>
+    document.querySelector("[data-pref-theme]")?.addEventListener("click", () => {
+      document.querySelector(".topbar [data-theme-toggle]")?.click();
+    });
+  </script>
+</body>
+
+</html>

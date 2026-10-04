@@ -1,0 +1,118 @@
+/**
+ * BTECH SMM — Support Module (Supabase — Phase 4)
+ * ----------------------------------------------------------------
+ * FAQ stays static (bundled copy). Tickets now read/write the
+ * `support_tickets` + `support_messages` tables (RLS-scoped to the
+ * signed-in user). A logged-out visitor sees the FAQ only — ticket
+ * creation requires an account, matching support.html's marketing
+ * placement (no auth guard on the page itself).
+ */
+
+import { supabase } from "./supabase.js";
+import { AuthService } from "./auth.js";
+import { FAQS } from "../data/demo-data.js";
+import { formatDateTime, generateId, escapeHtml, showToast, setButtonLoading } from "./utils.js";
+
+function renderFaqs() {
+  const container = document.querySelector("[data-faq-list]");
+  if (!container) return;
+  container.innerHTML = FAQS.map(
+    (f, i) => `
+    <details class="faq-item" ${i === 0 ? "open" : ""}>
+      <summary>${escapeHtml(f.q)}</summary>
+      <p>${escapeHtml(f.a)}</p>
+    </details>`
+  ).join("");
+}
+
+async function renderTickets() {
+  const list = document.querySelector("[data-tickets-list]");
+  const empty = document.querySelector("[data-tickets-empty]");
+  if (!list) return;
+
+  if (!AuthService.isAuthenticated()) {
+    list.hidden = true;
+    if (empty) {
+      empty.hidden = false;
+      empty.innerHTML = `<p>Log in to view or create support tickets.</p><a href="login.html" class="btn btn--primary btn--sm">Log in</a>`;
+    }
+    return;
+  }
+
+  const { data, error } = await supabase.from("support_tickets").select("*").order("created_at", { ascending: false });
+  if (error || !data || data.length === 0) {
+    list.hidden = true;
+    if (empty) empty.hidden = false;
+    return;
+  }
+
+  list.hidden = false;
+  if (empty) empty.hidden = true;
+  list.innerHTML = data
+    .map(
+      (t) => `
+    <div class="ticket-card">
+      <div class="ticket-card__head">
+        <span class="order-id">${t.id}</span>
+        <span class="badge badge--status badge--${t.status === "open" ? "processing" : "completed"}">${t.status === "open" ? "Open" : "Closed"}</span>
+      </div>
+      <p class="ticket-card__subject">${escapeHtml(t.subject)}</p>
+      <span class="txn-row__date">Opened ${formatDateTime(t.created_at)}</span>
+    </div>`
+    )
+    .join("");
+}
+
+function initTicketForm() {
+  const form = document.querySelector("[data-ticket-form]");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const submitBtn = form.querySelector("[type=submit]");
+    const errorBox = form.querySelector("[data-form-error]");
+    const subject = form.querySelector("[name=subject]").value.trim();
+    const message = form.querySelector("[name=message]").value.trim();
+    errorBox.textContent = "";
+
+    if (!AuthService.isAuthenticated()) {
+      errorBox.textContent = "Please log in to submit a support request.";
+      return;
+    }
+    if (subject.length < 4) {
+      errorBox.textContent = "Please enter a short subject for your request.";
+      return;
+    }
+    if (message.length < 10) {
+      errorBox.textContent = "Please describe your issue in a little more detail.";
+      return;
+    }
+
+    setButtonLoading(submitBtn, true, "Sending…");
+
+    const user = AuthService.getCurrentUser();
+    const ticketId = generateId("TCK").toUpperCase();
+
+    const { error: ticketError } = await supabase.from("support_tickets").insert({ id: ticketId, user_id: user.id, subject, status: "open" });
+    if (!ticketError) {
+      await supabase.from("support_messages").insert({ ticket_id: ticketId, sender: "user", message });
+    }
+
+    setButtonLoading(submitBtn, false);
+
+    if (ticketError) {
+      errorBox.textContent = "We couldn't submit your request. Please try again.";
+      return;
+    }
+
+    await renderTickets();
+    form.reset();
+    showToast("Support request submitted.", "success");
+  });
+}
+
+export async function initSupportPage() {
+  renderFaqs();
+  await renderTickets();
+  initTicketForm();
+}

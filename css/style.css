@@ -1,0 +1,486 @@
+/* ==========================================================================
+   BTECH SMM — Core Styles
+   Design tokens, resets, typography, and layout primitives.
+   ========================================================================== */
+
+:root {
+  /* Brand palette */
+  --color-primary: #0a84ff;
+  --color-deep: #0057d9;
+  --color-navy: #071a3d;
+  --color-dark: #050b18;
+  --color-white: #ffffff;
+  --color-bg-light: #f5f8fc;
+  --color-muted: #64748b;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-error: #dc2626;
+
+  /* Semantic surface tokens (light theme default) */
+  --surface-page: var(--color-bg-light);
+  --surface-card: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #eef2f8;
+  --surface-navy: var(--color-navy);
+  --border-color: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --text-primary: #0f172a;
+  --text-secondary: var(--color-muted);
+  --text-inverse: #ffffff;
+  --text-on-navy: #cdd9ee;
+
+  --accent: var(--color-primary);
+  --accent-deep: var(--color-deep);
+
+  /* ---------- Wallet / balance color system ----------
+     One consistent color language for anything representing money,
+     used by the wallet hero card, the dashboard/admin accent stat
+     card, and transaction rows. Solid colors only — no gradients. */
+  --balance-surface: var(--color-navy);
+  --balance-text: #ffffff;
+  --balance-label: #9fb3d9;
+  --balance-positive: var(--color-success);
+  --balance-positive-bg: color-mix(in srgb, var(--color-success) 16%, transparent);
+  --balance-pending: var(--color-warning);
+  --balance-pending-bg: color-mix(in srgb, var(--color-warning) 18%, transparent);
+  --balance-negative: var(--color-error);
+  --balance-negative-bg: color-mix(in srgb, var(--color-error) 13%, transparent);
+
+  /* Type scale */
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.375rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 2.25rem;
+  --fs-3xl: 3rem;
+
+  /* Spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-full: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(7, 26, 61, 0.06);
+  --shadow-md: 0 8px 24px rgba(7, 26, 61, 0.08);
+  --shadow-lg: 0 20px 48px rgba(7, 26, 61, 0.14);
+
+  --header-height: 68px;
+  --bottom-nav-height: 64px;
+  --container-width: 1180px;
+
+  /* Customer sidebar/top-bar (permanent nav redesign). Kept as its own
+     small set of tokens rather than repurposing --color-primary/--color-navy,
+     so the rest of the app's existing buttons/hero/etc. don't shift color. */
+  --sidebar-width: 248px;
+  --sidebar-width-tablet: 216px;
+  --sidebar-navy: #0b2148;
+  --sidebar-text: #b7c4dc;
+  --sidebar-text-strong: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --nav-active-blue: #1677e8;
+  --soft-blue: #eaf3ff;
+
+  --transition-fast: 150ms ease;
+  --transition-base: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --surface-page: var(--color-dark);
+  --surface-card: #0b1730;
+  --surface-raised: #101f3d;
+  --surface-sunken: #081326;
+  --surface-navy: #030a1a;
+  --border-color: #1c2c4d;
+  --border-strong: #29406b;
+
+  --text-primary: #f1f5fb;
+  --text-secondary: #92a2c2;
+  --text-inverse: #ffffff;
+  --text-on-navy: #92a2c2;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.55);
+
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--surface-page);
+  color: var(--text-primary);
+  font-size: var(--fs-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--transition-base), color var(--transition-base);
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: sans-serif;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0 0 var(--sp-3);
+  letter-spacing: -0.01em;
+  color: rgb(0, 123, 255);
+  text-transform: capitalize;
+  font-size: 9px;
+}
+
+/* Fluid type scale: scales smoothly from small phones (320px) up to
+   desktop instead of jumping between a couple of fixed breakpoints, so
+   headings never feel oversized/cramped on any of 320/360/390/430px. */
+h1 {
+  font-size: clamp(1.5rem, 4.5vw + 0.7rem, var(--fs-3xl));
+}
+
+h2 {
+  font-size: clamp(1.25rem, 3.5vw + 0.6rem, var(--fs-2xl));
+}
+
+h3 {
+  font-size: clamp(1.05rem, 2vw + 0.6rem, var(--fs-lg));
+}
+
+p {
+  margin: 0 0 var(--sp-4);
+  color: var(--text-secondary);
+}
+
+.muted {
+  color: var(--text-secondary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 var(--sp-5);
+}
+
+.section {
+  padding: var(--sp-16) 0;
+}
+
+.section--tight {
+  padding: var(--sp-10) 0;
+}
+
+.section--sunken {
+  background: var(--surface-sunken);
+}
+
+.section--navy {
+  background: var(--surface-navy);
+  color: var(--text-on-navy);
+}
+
+.section--navy h2,
+.section--navy h1 {
+  color: #fff;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: var(--sp-3);
+}
+
+.section-head {
+  max-width: 620px;
+  margin: 0 auto var(--sp-10);
+  text-align: center;
+}
+
+.section-head--left {
+  margin-left: 0;
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Page shell: reserve space so fixed header / bottom nav don't overlap content */
+main {
+  display: block;
+  padding-top: var(--header-height);
+  min-height: 60vh;
+  animation: page-fade-in 220ms ease;
+  padding: 10px
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+[data-reveal].reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body[data-nav="app"] main {
+  padding-bottom: var(--sp-10);
+}
+
+@media (max-width: 720px) {
+  body[data-nav="app"] main {
+    padding-bottom: calc(var(--bottom-nav-height) + var(--sp-6));
+  }
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: var(--color-primary);
+  color: #fff;
+  padding: var(--sp-2) var(--sp-4);
+  z-index: 1000;
+  border-radius: 0 0 var(--radius-sm) 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+/* Loading / skeleton */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-sunken) 25%, var(--border-color) 50%, var(--surface-sunken) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeleton-sweep {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative;
+  background: radial-gradient(circle at 15% 15%, #0d2a5c 0%, var(--color-navy) 45%, var(--color-dark) 100%);
+  color: #fff;
+  overflow: hidden;
+  padding: calc(var(--sp-20) + var(--sp-6)) 0 var(--sp-20);
+
+
+
+
+}
+
+.hero__mark {
+  position: absolute;
+  top: 50%;
+  right: -6%;
+  width: 620px;
+  height: 620px;
+  transform: translateY(-50%);
+  opacity: 0.1;
+  animation: spin-slow 40s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
+.hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+}
+
+.hero h1 {
+  font-size: clamp(2.2rem, 5vw, var(--fs-3xl));
+  margin-bottom: var(--sp-4);
+}
+
+.hero p.hero__lead {
+  color: #c3d1ec;
+  font-size: var(--fs-md);
+  max-width: 520px;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: var(--sp-6);
+}
+
+.hero__actions .btn--secondary {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+.hero__actions .btn--secondary:hover {
+  border-color: #fff;
+}
+
+/* ---------- Stats banner ---------- */
+.stats-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--sp-6);
+  text-align: center;
+}
+
+.stats-banner__item strong {
+  display: block;
+  font-size: var(--fs-2xl);
+  font-family: var(--font-display);
+  color: var(--color-primary);
+}
+
+.stats-banner__item span {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.stats-note {
+  text-align: center;
+  font-size: var(--fs-xs);
+  margin-top: var(--sp-6);
+  color: var(--text-secondary);
+}
+
+/* ---------- CTA banner ---------- */
+.cta-banner {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-deep));
+  border-radius: var(--radius-lg);
+  padding: var(--sp-12) var(--sp-8);
+  text-align: center;
+  color: #fff;
+}
+
+.cta-banner h2 {
+  color: #fff;
+}
+
+.cta-banner p {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cta-banner .btn--primary {
+  background: #fff;
+  color: var(--color-deep);
+  box-shadow: none;
+}
+
+.cta-banner .btn--primary:hover {
+  background: #f1f6ff;
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: -2px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

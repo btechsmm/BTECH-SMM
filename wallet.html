@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wallet — BTECH SMM</title>
+  <link rel="icon" type="image/png" href="assets/brand/icon-32.png" />
+  <link rel="apple-touch-icon" href="assets/brand/icon-180.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0A84FF" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+
+<body data-page="wallet" data-nav="customer" data-requires-auth="true">
+  <a href="#main" class="skip-link">Skip to content</a>
+  <header id="site-header"></header>
+
+  <main id="main">
+    <div class="container section--tight section">
+      <div class="page-head">
+        <div>
+          <h1>Wallet</h1>
+          <p class="muted">This is your real BTECH SMM wallet balance</p>
+        </div>
+      </div>
+
+      <div class="wallet-hero">
+        <div>
+          <p class="wallet-hero__label">Current balance</p>
+          <p class="wallet-hero__balance" data-wallet-balance>KSh 0</p>
+        </div>
+        <button type="button" class="btn btn--primary btn--lg" data-deposit-open>Deposit Funds</button>
+      </div>
+
+      <div data-wallet-loyalty hidden style="margin-bottom:var(--sp-6)"></div>
+
+      <div class="wallet-grid">
+        <div class="panel" data-txn-panel>
+          <div class="panel__head">
+            <h3>Recent transactions</h3>
+          </div>
+          <div class="panel__body txn-scroll" data-transactions-list data-txn-types=""></div>
+          <div class="empty-state empty-state--compact" data-transactions-empty hidden>
+            <p>No transactions yet.</p>
+          </div>
+        </div>
+
+        <div class="wallet-grid__side">
+          <div class="panel" data-txn-panel>
+            <div class="panel__head">
+              <h3>Deposits</h3>
+            </div>
+            <div class="panel__body txn-scroll" data-transactions-list data-txn-types="deposit"></div>
+            <div class="empty-state empty-state--compact" data-transactions-empty hidden>
+              <p>No deposits yet.</p>
+            </div>
+          </div>
+
+          <div class="panel" data-txn-panel>
+            <div class="panel__head">
+              <h3>Order payments</h3>
+            </div>
+            <div class="panel__body txn-scroll" data-transactions-list data-txn-types="order"></div>
+            <div class="empty-state empty-state--compact" data-transactions-empty hidden>
+              <p>No order payments yet.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" data-deposit-modal hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deposit-title">
+        <div class="modal__head">
+          <h3 id="deposit-title">Deposit funds</h3>
+          <button class="icon-btn" type="button" data-deposit-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
+        <img src="assets/brand/btech-mpesa-logo.svg" alt="BTECH SMM and M-Pesa" class="payment-partner-logo" />
+        <form data-deposit-form novalidate>
+          <p class="form-error" data-form-error role="alert"></p>
+          <p class="form-hint" data-deposit-status style="margin-bottom:var(--sp-4)"></p>
+          <div class="form-field">
+            <label for="deposit-phone">M-Pesa phone number</label>
+            <input id="deposit-phone" name="phone" type="tel" placeholder="07XX XXX XXX" required />
+          </div>
+          <div class="form-field">
+            <label for="deposit-amount">Amount (KES)</label>
+            <input id="deposit-amount" name="amount" type="number" min="10" step="1" placeholder="e.g. 1000" required />
+          </div>
+          <button type="submit" class="btn btn--primary btn--block">Send M-Pesa Request</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <div id="bottom-nav-slot"></div>
+  <footer id="site-footer"></footer>
+  <script type="module" src="js/app.js"></script>
+</body>
+
+</html>

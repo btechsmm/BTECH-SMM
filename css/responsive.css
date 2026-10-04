@@ -1,0 +1,254 @@
+/* ==========================================================================
+   BTECH SMM — Services page: mobile-only polish
+   Scoped to body[data-page="services"] so nothing here can ever affect any
+   other page or desktop widths. Purely spacing/layout — no logic, no data,
+   no color changes here (brand icon colors live in components.css since
+   they apply at every width, not just mobile).
+   ========================================================================== */
+@media (max-width: 640px) {
+
+  /* One consistent gutter for every section on this page — heading, search,
+     tiles, cards — instead of the default 480px breakpoint leaving 481–640px
+     phones on a wider, inconsistent margin than smaller ones. */
+  body[data-page="services"] .container {
+    padding: 0 var(--sp-4);
+  }
+
+  /* The platform grid was fitting 3 cramped columns on common phone widths
+     via auto-fill's fluid packing — force a clean, deliberate 2-column
+     layout instead, per the "2 columns preferred on a normal smartphone"
+     guidance. */
+  body[data-page="services"] .catalogue-tile-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-6);
+  }
+
+  body[data-page="services"] .catalogue-tile {
+    padding: var(--sp-4);
+  }
+
+  /* Tighten the vertical rhythm — heading block, filters, and tiles were
+     inheriting desktop-scale section padding, which reads as "compressed
+     desktop" rather than a page designed for a phone. */
+  /* Longhand on purpose - same reasoning as the general .section fix
+     further down this file: a shorthand here (padding: X 0 Y) also zeroed
+     padding-left/right, silently overriding body[data-page="services"]
+     .container's own 16px above, since both selectors share identical
+     specificity and this one comes later. */
+  body[data-page="services"] .section--tight {
+    padding-top: var(--sp-6);
+    padding-bottom: var(--sp-4);
+  }
+
+  body[data-page="services"] .page-head {
+    margin-bottom: var(--sp-5);
+  }
+
+  body[data-page="services"] .filters-bar {
+    margin-bottom: var(--sp-5);
+    gap: var(--sp-2);
+  }
+
+  body[data-page="services"] .filters-bar select,
+  body[data-page="services"] .filters-bar input {
+    min-height: 44px;
+    font-size: var(--fs-sm);
+  }
+}
+
+
+/* Global overflow guard */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Heading sizes are handled by the fluid clamp() scale in style.css now,
+   not fixed breakpoint jumps — nothing to override here any more. */
+@media (max-width: 480px) {
+  .container {
+    padding: 0 var(--sp-4);
+  }
+
+  /* Longhand on purpose: this only ever meant to tighten vertical spacing
+     on small phones, matching .section--tight's own philosophy. Written as
+     the shorthand `padding: var(--sp-10) 0`, it also set padding-left/
+     padding-right to 0 on EVERY element with both .container and .section
+     (almost every page's main content wrapper) - and because this rule
+     comes after .container's own padding in this same file/media block,
+     that 0 won the cascade and silently deleted the side margins on every
+     page at <=480px, however .container's own padding was set. */
+  .section {
+    padding-top: var(--sp-10);
+    padding-bottom: var(--sp-10);
+  }
+
+  .hero {
+    padding: var(--sp-16) 0 var(--sp-12);
+  }
+
+  .hero__mark {
+    width: 380px;
+    height: 380px;
+    right: -30%;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Order details: keep the head and progress indicator from
+   overflowing/overlapping on narrow phones ---------- */
+@media (max-width: 600px) {
+  .order-details__head {
+    flex-wrap: wrap;
+  }
+
+  .progress-track {
+    gap: 0;
+  }
+
+  .progress-track__step {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .progress-track__label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    font-size: 10px;
+  }
+
+  .progress-track__line {
+    margin: 0 4px 22px;
+  }
+
+  /* A 320px-wide dropdown anchored with right:0 doesn't fit on a
+     320–390px phone without overflowing the viewport horizontally —
+     pin it to the screen edges instead of a fixed pixel width. */
+  .notif-panel {
+    position: fixed;
+    top: var(--header-height);
+    left: var(--sp-4);
+    right: var(--sp-4);
+    width: auto;
+  }
+}
+
+/* Responsive data tables: collapse to stacked cards below 720px */
+@media (max-width: 720px) {
+  .data-table thead {
+    display: none;
+  }
+
+  .data-table,
+  .data-table tbody,
+  .data-table tr,
+  .data-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .data-table tr {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--sp-3);
+    padding: var(--sp-2) var(--sp-4);
+    background: var(--surface-card);
+  }
+
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-3);
+    border-bottom: 1px dashed var(--border-color);
+    padding: var(--sp-2) 0;
+    font-size: var(--fs-sm);
+    /* Without this, a long unbroken value (a target URL, an email with no
+       spaces) forces this flex cell wider than the card, which - since
+       nothing here clips it - pushes the whole row past the screen edge.
+       min-width: 0 lets the cell actually shrink to the row's real width;
+       overflow-wrap: anywhere then wraps anything that doesn't already use
+       .truncate's own ellipsis, instead of letting it run off-screen. */
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .data-table td:last-child {
+    border-bottom: none;
+  }
+
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+  }
+
+  .data-table .truncate {
+    max-width: 160px;
+  }
+
+  /* The fixed bottom nav (app pages only) sits on top of the page, so
+     anything that would otherwise end flush with the viewport bottom —
+     most importantly the footer — needs room reserved for it, or its
+     lowest content/links are permanently hidden behind the nav bar. */
+  body[data-nav="app"] .site-footer {
+    padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 640px) {
+  .wallet-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-links {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .modal {
+    max-width: 100%;
+  }
+
+  /* The footer was accumulating several independent gaps (brand block ->
+     links block, links row -> links row, then the copyright bar) into one
+     large stack. Tightened for mobile only — desktop's spacing is untouched. */
+  .footer-inner {
+    gap: var(--sp-6);
+    padding-bottom: var(--sp-6);
+  }
+
+  .footer-links {
+    gap: var(--sp-5);
+  }
+
+  .footer-bottom {
+    padding: var(--sp-4) 0;
+  }
+}
+
+@media (min-width: 720px) and (max-width: 959px) {
+
+  .why-grid,
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Comfortable large-desktop max width so text doesn't stretch too wide */
+@media (min-width: 1400px) {
+  :root {
+    --container-width: 1280px;
+  }
+}
