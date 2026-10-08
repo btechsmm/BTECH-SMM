@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin.html
 
-Sitemap: https://btechsmm.example.com/sitemap.xml
+Sitemap: https://btechsmm.store/sitemap.xml
