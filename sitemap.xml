@@ -1,10 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://btechsmm.example.com/index.html</loc><priority>1.0</priority></url>
-  <url><loc>https://btechsmm.example.com/services.html</loc><priority>0.9</priority></url>
-  <url><loc>https://btechsmm.example.com/support.html</loc><priority>0.6</priority></url>
-  <url><loc>https://btechsmm.example.com/login.html</loc><priority>0.4</priority></url>
-  <url><loc>https://btechsmm.example.com/register.html</loc><priority>0.4</priority></url>
-  <url><loc>https://btechsmm.example.com/terms.html</loc><priority>0.2</priority></url>
-  <url><loc>https://btechsmm.example.com/privacy.html</loc><priority>0.2</priority></url>
+
+  <!-- BTECH SMM Homepage -->
+  <url>
+    <loc>https://btechsmm.store/</loc>
+  </url>
+
+  <!-- SMM Services -->
+  <url>
+    <loc>https://btechsmm.store/services.html</loc>
+  </url>
+  <url>
+    <loc>https://btechsmm.store/about.html</loc>
+  </url>
+
+  <!-- Customer Support -->
+  <url>
+    <loc>https://btechsmm.store/support.html</loc>
+  </url>
+
+  <!-- Customer Login -->
+  <url>
+    <loc>https://btechsmm.store/login.html</loc>
+  </url>
+
+  <!-- Customer Registration -->
+  <url>
+    <loc>https://btechsmm.store/register.html</loc>
+  </url>
+
+  <!-- Terms of Service -->
+  <url>
+    <loc>https://btechsmm.store/terms.html</loc>
+  </url>
+
+  <!-- Privacy Policy -->
+  <url>
+    <loc>https://btechsmm.store/privacy.html</loc>
+  </url>
+
 </urlset>
