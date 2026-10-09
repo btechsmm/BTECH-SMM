@@ -23,6 +23,9 @@
  * even though they took effect immediately server-side. Supabase
  * requests must always hit the network live.
  *
+ * CLEAN URLS: v17 switched the cached page URLs from "login.html" style to "login" style. Bumping the
+ * version makes activate() delete the v16 cache, so no stale *.html entries linger.
+ *
  * Bump CACHE_VERSION whenever cached files change so old caches
  * are cleaned up on the next visit — this itself also forces every
  * visitor's browser to drop any previously-cached Supabase
@@ -30,21 +33,23 @@
  * handler.
  */
 
-const CACHE_VERSION = "btechsmm-v16";
+const CACHE_VERSION = "btechsmm-v17";
+// Pages are listed by their clean URL (Render rewrites /login -> login.html). offline.html is kept as a
+// real file name on purpose: it is the fixed fallback served by the fetch handler below.
 const PRECACHE_URLS = [
-  "index.html",
-  "services.html",
-  "login.html",
-  "register.html",
-  "dashboard.html",
-  "orders.html",
-  "wallet.html",
-  "profile.html",
-  "support.html",
-  "loyalty.html",
-  "ambassador.html",
-  "verify-ambassador.html",
-  "insights.html",
+  "/",
+  "services",
+  "login",
+  "register",
+  "dashboard",
+  "orders",
+  "wallet",
+  "profile",
+  "support",
+  "loyalty",
+  "ambassador",
+  "verify-ambassador",
+  "insights",
   "offline.html",
   "manifest.json",
   "css/style.css",
