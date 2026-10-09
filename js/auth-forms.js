@@ -39,16 +39,16 @@ function wireForm(formSelector, handler, successRedirect) {
 export function initAuthForms(page) {
   if (page === "login") {
     wireForm("[data-login-form]", AuthService.login, () => {
-      window.location.href = "dashboard.html";
+      window.location.href = "dashboard";
     });
   }
   if (page === "register") {
     wireForm("[data-register-form]", AuthService.register, (result) => {
       if (result.needsConfirmation) {
         showToast("Account created. Please check your email to confirm before logging in.", "info", 6000);
-        window.location.href = "login.html";
+        window.location.href = "login";
       } else {
-        window.location.href = "dashboard.html";
+        window.location.href = "dashboard";
       }
     });
   }
@@ -62,7 +62,7 @@ export function initAuthForms(page) {
   if (page === "reset-password") {
     wireForm("[data-reset-form]", AuthService.resetPassword, () => {
       showToast("Password reset. Please log in.", "success");
-      window.location.href = "login.html";
+      window.location.href = "login";
     });
   }
 }

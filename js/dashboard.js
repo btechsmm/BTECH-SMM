@@ -52,7 +52,7 @@ export async function initDashboard() {
         .map((o) => {
           const service = findService(o.service_id);
           return `
-          <a class="recent-order" href="order-details.html?id=${o.id}">
+          <a class="recent-order" href="order-details?id=${o.id}">
             <div>
               <p class="recent-order__name">${escapeHtml(service?.name || "Order")}</p>
               <p class="recent-order__meta">${o.id} · ${formatDateTime(o.created_at)}</p>
@@ -78,7 +78,7 @@ export async function initDashboard() {
       popularList.innerHTML = popular
         .map(
           (s) => `
-          <a class="recent-order" href="service-order.html?service=${s.id}">
+          <a class="recent-order" href="service-order?service=${s.id}">
             <div>
               <p class="recent-order__name">${escapeHtml(s.name)}</p>
               <p class="recent-order__meta">${escapeHtml(ServicesData.platformLabel(s.platform))}</p>

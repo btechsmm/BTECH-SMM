@@ -94,12 +94,12 @@ export async function initOrderForm() {
 
   const infoBox = document.querySelector("[data-service-info]");
   if (ServicesService.hasError()) {
-    infoBox.innerHTML = `<div class="empty-state"><p>Unable to load this service right now. Please try again shortly.</p><a class="btn btn--primary" href="services.html">Browse services</a></div>`;
+    infoBox.innerHTML = `<div class="empty-state"><p>Unable to load this service right now. Please try again shortly.</p><a class="btn btn--primary" href="services">Browse services</a></div>`;
     form.hidden = true;
     return;
   }
   if (!service) {
-    infoBox.innerHTML = `<div class="empty-state"><p>We couldn't find that service.</p><a class="btn btn--primary" href="services.html">Browse services</a></div>`;
+    infoBox.innerHTML = `<div class="empty-state"><p>We couldn't find that service.</p><a class="btn btn--primary" href="services">Browse services</a></div>`;
     form.hidden = true;
     return;
   }
@@ -309,7 +309,7 @@ export async function initOrderForm() {
       "success",
       5000
     );
-    window.location.href = `order-details.html?id=${encodeURIComponent(result.order.id)}`;
+    window.location.href = `order-details?id=${encodeURIComponent(result.order.id)}`;
   });
 }
 
@@ -350,7 +350,7 @@ export async function initOrdersList() {
       .map((o) => {
         const service = findService(o.serviceId);
         return `
-        <tr class="order-row" data-href="order-details.html?id=${o.id}" tabindex="0">
+        <tr class="order-row" data-href="order-details?id=${o.id}" tabindex="0">
           <td data-label="Order ID"><span class="order-id">${o.id}</span></td>
           <td data-label="Service">${escapeHtml(service?.name || "—")}</td>
           <td data-label="Platform">${service ? ServicesData.platformLabel(service.platform) : "—"}</td>
@@ -400,7 +400,7 @@ export async function initOrderDetails() {
   const { data, error } = await supabase.from("orders").select("*").eq("id", params.get("id")).single();
 
   if (error || !data) {
-    container.innerHTML = `<div class="empty-state"><p>We couldn't find that order.</p><a class="btn btn--primary" href="orders.html">Back to orders</a></div>`;
+    container.innerHTML = `<div class="empty-state"><p>We couldn't find that order.</p><a class="btn btn--primary" href="orders">Back to orders</a></div>`;
     return;
   }
 

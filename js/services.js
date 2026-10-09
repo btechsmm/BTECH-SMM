@@ -123,7 +123,7 @@ function serviceCard(svc) {
       <div><dt>Starting at</dt><dd>${formatCurrency(svc.pricePer1000)} <span class="muted">/ ${unit}</span></dd></div>
       <div><dt>Min – Max</dt><dd>${formatNumber(svc.min)} – ${formatNumber(svc.max)}</dd></div>
     </dl>
-    <a class="btn btn--primary btn--block" href="service-order.html?service=${svc.id}">Order Now</a>
+    <a class="btn btn--primary btn--block" href="service-order?service=${svc.id}">Order Now</a>
   </article>`;
 }
 
@@ -146,7 +146,7 @@ export function renderFeatured(container, count = 3) {
 
 function categoryTile(categoryId, platformId, count) {
   return `
-  <a class="catalogue-tile" data-reveal href="services.html?platform=${platformId}&category=${categoryId}">
+  <a class="catalogue-tile" data-reveal href="services?platform=${platformId}&category=${categoryId}">
     <span class="catalogue-tile__label">${escapeHtml(categoryLabel(categoryId))}</span>
     <span class="catalogue-tile__count">${count} service${count === 1 ? "" : "s"}</span>
   </a>`;
@@ -154,7 +154,7 @@ function categoryTile(categoryId, platformId, count) {
 
 function platformTile(platformId, count) {
   return `
-  <a class="catalogue-tile" data-reveal href="services.html?platform=${platformId}">
+  <a class="catalogue-tile" data-reveal href="services?platform=${platformId}">
     <span class="catalogue-tile__icon catalogue-tile__icon--${platformId}" aria-hidden="true">${PLATFORM_ICONS[platformId] || ""}</span>
     <span class="catalogue-tile__label">${platformLabel(platformId)}</span>
     <span class="catalogue-tile__count">${count} service${count === 1 ? "" : "s"}</span>
@@ -170,8 +170,8 @@ function renderBreadcrumb(platform, category) {
     return;
   }
   nav.style.display = "block";
-  const parts = [`<a href="services.html">Services</a>`];
-  parts.push(category ? `<a href="services.html?platform=${platform}">${platformLabel(platform)}</a>` : `<span>${platformLabel(platform)}</span>`);
+  const parts = [`<a href="services">Services</a>`];
+  parts.push(category ? `<a href="services?platform=${platform}">${platformLabel(platform)}</a>` : `<span>${platformLabel(platform)}</span>`);
   if (category) parts.push(`<span>${categoryLabel(category)}</span>`);
   nav.innerHTML = parts.join(` <span class="muted">/</span> `);
 }

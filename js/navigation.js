@@ -45,18 +45,18 @@ import { avatarInner } from "./avatar.js";
 import { ICONS, SIDEBAR_MAIN_GUEST, SIDEBAR_ACCOUNT_GUEST, SIDEBAR_MAIN_AUTH, SIDEBAR_ACCOUNT_AUTH, customerSidebar } from "./sidebar.js";
 
 const MARKETING_LINKS = [
-  { href: "index.html", label: "Home", key: "home" },
-  { href: "services.html", label: "Services", key: "services" },
-  { href: "index.html#how-it-works", label: "How It Works", key: "how-it-works" },
-  { href: "index.html#about", label: "About", key: "about" },
-  { href: "support.html", label: "Support", key: "support" },
+  { href: "/", label: "Home", key: "home" },
+  { href: "services", label: "Services", key: "services" },
+  { href: "/#how-it-works", label: "How It Works", key: "how-it-works" },
+  { href: "/#about", label: "About", key: "about" },
+  { href: "support", label: "Support", key: "support" },
 ];
 
 const APP_LINKS = [
-  { href: "dashboard.html", label: "Home", key: "dashboard", icon: "home" },
-  { href: "orders.html", label: "Orders", key: "orders", icon: "orders" },
-  { href: "wallet.html", label: "Wallet", key: "wallet", icon: "wallet" },
-  { href: "profile.html", label: "Profile", key: "profile", icon: "profile" },
+  { href: "dashboard", label: "Home", key: "dashboard", icon: "home" },
+  { href: "orders", label: "Orders", key: "orders", icon: "orders" },
+  { href: "wallet", label: "Wallet", key: "wallet", icon: "wallet" },
+  { href: "profile", label: "Profile", key: "profile", icon: "profile" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -69,7 +69,7 @@ function marketingHeader(activeKey) {
   ).join("");
   return `
   <div class="header-inner container">
-    <a href="index.html" class="brand" aria-label="BTECH SMM home">
+    <a href="/" class="brand" aria-label="BTECH SMM home">
       <img src="assets/brand/btech-smm-logo.png" alt="BTECH SMM" class="brand__logo" width="140" height="29" />
     </a>
     <nav class="nav-desktop" aria-label="Primary">
@@ -78,8 +78,8 @@ function marketingHeader(activeKey) {
     <div class="header-actions">
       <button class="icon-btn" type="button" data-theme-toggle aria-label="Toggle dark mode">${ICONS.moon}</button>
       ${authed
-      ? `<a href="dashboard.html" class="btn btn--primary btn--sm">Dashboard</a>`
-      : `<a href="login.html" class="nav-link nav-link--login">Login</a><a href="register.html" class="btn btn--primary btn--sm">Get Started</a>`
+      ? `<a href="dashboard" class="btn btn--primary btn--sm">Dashboard</a>`
+      : `<a href="login" class="nav-link nav-link--login">Login</a><a href="register" class="btn btn--primary btn--sm">Get Started</a>`
     }
       <button class="icon-btn nav-toggle" type="button" data-mobile-menu-toggle aria-label="Open menu" aria-expanded="false">${ICONS.menu}</button>
     </div>
@@ -88,8 +88,8 @@ function marketingHeader(activeKey) {
     ${links}
     <hr class="nav-mobile__divider" />
     ${authed
-      ? `<a href="dashboard.html" class="nav-link">Dashboard</a><a href="#" class="nav-link" data-logout>Logout</a>`
-      : `<a href="login.html" class="nav-link">Login</a><a href="register.html" class="nav-link">Get Started</a>`
+      ? `<a href="dashboard" class="nav-link">Dashboard</a><a href="#" class="nav-link" data-logout>Logout</a>`
+      : `<a href="login" class="nav-link">Login</a><a href="register" class="nav-link">Get Started</a>`
     }
   </div>`;
 }
@@ -107,25 +107,25 @@ function adminHeader(activeKey) {
   ).join("");
   return `
   <div class="header-inner container">
-    <a href="dashboard.html" class="brand" aria-label="BTECH SMM home">
+    <a href="dashboard" class="brand" aria-label="BTECH SMM home">
       <img src="assets/brand/btech-smm-logo.png" alt="BTECH SMM" class="brand__logo" width="140" height="29" />
     </a>
     <nav class="nav-desktop nav-desktop--app" aria-label="Primary">
       ${links}
-      <a href="support.html" class="app-nav-link">Support</a>
-      <a href="admin.html" class="app-nav-link ${activeKey === "insights" ? "" : "app-nav-link--active"}">Admin</a>
-      <a href="insights.html" class="app-nav-link ${activeKey === "insights" ? "app-nav-link--active" : ""}">Insights</a>
+      <a href="support" class="app-nav-link">Support</a>
+      <a href="admin" class="app-nav-link ${activeKey === "insights" ? "" : "app-nav-link--active"}">Admin</a>
+      <a href="insights" class="app-nav-link ${activeKey === "insights" ? "app-nav-link--active" : ""}">Insights</a>
     </nav>
     <div class="header-actions">
       <button class="icon-btn" type="button" data-theme-toggle aria-label="Toggle dark mode">${ICONS.moon}</button>
-      <a href="profile.html" class="avatar" aria-label="Profile">${avatarInner(user)}</a>
+      <a href="profile" class="avatar" aria-label="Profile">${avatarInner(user)}</a>
       <button class="icon-btn nav-toggle" type="button" data-mobile-menu-toggle aria-label="Open menu" aria-expanded="false">${ICONS.menu}</button>
     </div>
   </div>
   <div class="nav-mobile" data-mobile-menu>
     ${links}
-    <a href="support.html" class="app-nav-link">Support</a>
-    <a href="admin.html" class="app-nav-link">Admin</a>
+    <a href="support" class="app-nav-link">Support</a>
+    <a href="admin" class="app-nav-link">Admin</a>
     <hr class="nav-mobile__divider" />
     <a href="#" class="nav-link" data-logout>Logout</a>
   </div>`;
@@ -136,7 +136,7 @@ function adminHeader(activeKey) {
 // ---------------------------------------------------------------------------
 function walletPillHtml() {
   return `
-  <a class="wallet-pill" href="wallet.html" data-wallet-pill aria-label="Wallet balance">
+  <a class="wallet-pill" href="wallet" data-wallet-pill aria-label="Wallet balance">
     <span class="wallet-pill__icon" aria-hidden="true">${ICONS.wallet}</span>
     <span class="wallet-pill__text">
       <span class="wallet-pill__label">Wallet Balance</span>
@@ -166,14 +166,14 @@ function customerTopbar(authed, user) {
       : ""
     }
       <button class="icon-btn" type="button" data-theme-toggle aria-label="Toggle dark mode">${ICONS.moon}</button>
-      ${authed && user?.role === "admin" ? `<a href="admin.html" class="admin-portal-btn">${ICONS.shield}<span>Admin Portal</span></a>` : ""}
+      ${authed && user?.role === "admin" ? `<a href="admin" class="admin-portal-btn">${ICONS.shield}<span>Admin Portal</span></a>` : ""}
       ${authed
-      ? `<a href="profile.html" class="topbar__profile" aria-label="Profile">
+      ? `<a href="profile" class="topbar__profile" aria-label="Profile">
           <span class="avatar avatar--sm">${avatarInner(user)}</span>
           <span class="topbar__profile-name">${escapeHtml(user?.name || "Account")}</span>
           <span class="topbar__profile-caret" aria-hidden="true">${ICONS.caret}</span>
         </a>`
-      : `<a href="login.html" class="nav-link nav-link--login">Login</a><a href="register.html" class="btn btn--primary btn--sm">Get Started</a>`
+      : `<a href="login" class="nav-link nav-link--login">Login</a><a href="register" class="btn btn--primary btn--sm">Get Started</a>`
     }
     </div>
   </div>`;
@@ -191,9 +191,9 @@ function customerMobileMenu(activeKey) {
   return `
   <div class="nav-mobile" data-mobile-menu>
     ${links}
-    ${authed && user?.role === "admin" ? `<a href="admin.html" class="nav-link">Admin Portal</a>` : ""}
+    ${authed && user?.role === "admin" ? `<a href="admin" class="nav-link">Admin Portal</a>` : ""}
     <hr class="nav-mobile__divider" />
-    ${authed ? `<a href="#" class="nav-link" data-logout>Logout</a>` : `<a href="login.html" class="nav-link">Login</a><a href="register.html" class="nav-link">Get Started</a>`}
+    ${authed ? `<a href="#" class="nav-link" data-logout>Logout</a>` : `<a href="login" class="nav-link">Login</a><a href="register" class="nav-link">Get Started</a>`}
   </div>`;
 }
 
@@ -210,7 +210,7 @@ function bottomNav(activeKey) {
   return `<nav class="bottom-nav" aria-label="Primary">
     ${item(home)}
     ${item(orders)}
-    <a href="services.html" class="bottom-nav__cta" aria-label="New order">${ICONS.plus}</a>
+    <a href="services" class="bottom-nav__cta" aria-label="New order">${ICONS.plus}</a>
     ${item(wallet)}
     ${item(profile)}
   </nav>`;
@@ -237,15 +237,15 @@ function footer() {
     <div class="footer-links">
       <div class="footer-col">
         <h4>Company</h4>
-        <a href="index.html">Home</a>
-        <a href="services.html">Services</a>
-        <a href="index.html#about">About</a>
+        <a href="/">Home</a>
+        <a href="services">Services</a>
+        <a href="/#about">About</a>
       </div>
       <div class="footer-col">
         <h4>Support</h4>
-        <a href="support.html">Support</a>
-        <a href="terms.html">Terms</a>
-        <a href="privacy.html">Privacy</a>
+        <a href="support">Support</a>
+        <a href="terms">Terms</a>
+        <a href="privacy">Privacy</a>
       </div>
       <div class="footer-col">
         <h4>Contact</h4>
@@ -318,7 +318,7 @@ function wireInteractions(root = document) {
     btn.addEventListener("click", async (e) => {
       e.preventDefault();
       await AuthService.logout();
-      window.location.href = "index.html";
+      window.location.href = "/";
     })
   );
 

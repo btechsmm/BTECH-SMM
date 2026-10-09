@@ -176,17 +176,17 @@ export function buildAttention(a) {
   if (!a) return [];
   const n = (k) => num(a[k]);
   const items = [
-    [n("pending_old"), `${n("pending_old")} order${n("pending_old") === 1 ? " has" : "s have"} been pending longer than ${a.pending_hours} hours`, "View Orders", "admin.html#orders-section"],
-    [n("awaiting_submission"), `${n("awaiting_submission")} paid order${n("awaiting_submission") === 1 ? " is" : "s are"} still waiting to be sent to the provider`, "View Provider", "admin.html#provider-section"],
-    [n("refund_requests"), `${n("refund_requests")} refund request${n("refund_requests") === 1 ? " is" : "s are"} awaiting a decision`, "Review Refunds", "admin.html#refunds-section"],
-    [n("cancellation_requests"), `${n("cancellation_requests")} cancellation request${n("cancellation_requests") === 1 ? " is" : "s are"} awaiting a decision`, "Review Cancellations", "admin.html#cancellations-section"],
-    [n("withdrawals_pending"), `${n("withdrawals_pending")} ambassador withdrawal${n("withdrawals_pending") === 1 ? " is" : "s are"} awaiting approval`, "Review Withdrawals", "admin.html#ambassadors-section"],
-    [n("withdrawals_to_pay"), `${n("withdrawals_to_pay")} approved withdrawal${n("withdrawals_to_pay") === 1 ? " is" : "s are"} waiting to be paid`, "Pay Withdrawals", "admin.html#ambassadors-section"],
-    [n("applications_pending"), `${n("applications_pending")} ambassador application${n("applications_pending") === 1 ? " is" : "s are"} awaiting review`, "Review Applications", "admin.html#ambassadors-section"],
+    [n("pending_old"), `${n("pending_old")} order${n("pending_old") === 1 ? " has" : "s have"} been pending longer than ${a.pending_hours} hours`, "View Orders", "admin#orders-section"],
+    [n("awaiting_submission"), `${n("awaiting_submission")} paid order${n("awaiting_submission") === 1 ? " is" : "s are"} still waiting to be sent to the provider`, "View Provider", "admin#provider-section"],
+    [n("refund_requests"), `${n("refund_requests")} refund request${n("refund_requests") === 1 ? " is" : "s are"} awaiting a decision`, "Review Refunds", "admin#refunds-section"],
+    [n("cancellation_requests"), `${n("cancellation_requests")} cancellation request${n("cancellation_requests") === 1 ? " is" : "s are"} awaiting a decision`, "Review Cancellations", "admin#cancellations-section"],
+    [n("withdrawals_pending"), `${n("withdrawals_pending")} ambassador withdrawal${n("withdrawals_pending") === 1 ? " is" : "s are"} awaiting approval`, "Review Withdrawals", "admin#ambassadors-section"],
+    [n("withdrawals_to_pay"), `${n("withdrawals_to_pay")} approved withdrawal${n("withdrawals_to_pay") === 1 ? " is" : "s are"} waiting to be paid`, "Pay Withdrawals", "admin#ambassadors-section"],
+    [n("applications_pending"), `${n("applications_pending")} ambassador application${n("applications_pending") === 1 ? " is" : "s are"} awaiting review`, "Review Applications", "admin#ambassadors-section"],
     [n("payments_failed_24h"), `${n("payments_failed_24h")} M-Pesa payment${n("payments_failed_24h") === 1 ? "" : "s"} failed or expired in the last 24 hours`, "View Payments", "#tab-finance"],
-    [n("ambassadors_suspended"), `${n("ambassadors_suspended")} ambassador${n("ambassadors_suspended") === 1 ? " is" : "s are"} currently suspended`, "View Ambassadors", "admin.html#ambassadors-section"],
-    [n("services_hidden"), `${n("services_hidden")} service${n("services_hidden") === 1 ? " is" : "s are"} hidden from customers`, "View Services", "admin.html#services-section"],
-    [n("open_tickets"), `${n("open_tickets")} support ticket${n("open_tickets") === 1 ? " is" : "s are"} open`, "View Support", "support.html"],
+    [n("ambassadors_suspended"), `${n("ambassadors_suspended")} ambassador${n("ambassadors_suspended") === 1 ? " is" : "s are"} currently suspended`, "View Ambassadors", "admin#ambassadors-section"],
+    [n("services_hidden"), `${n("services_hidden")} service${n("services_hidden") === 1 ? " is" : "s are"} hidden from customers`, "View Services", "admin#services-section"],
+    [n("open_tickets"), `${n("open_tickets")} support ticket${n("open_tickets") === 1 ? " is" : "s are"} open`, "View Support", "support"],
   ];
   return items.filter((i) => i[0] > 0).map(([, text, action, href]) => ({ text, action, href }));
 }
@@ -378,8 +378,8 @@ async function renderCustomers(el, w) {
       ${card("Referred by ambassadors", formatNumber(d.referred_total), `${formatNumber(d.referred_new)} new in period`)}
     </div>
     <div style="margin-top:var(--sp-4)">${panel("Top customers by paid spend", tbl(["Customer", "Orders", "Paid spend", "Last order", "Source"],
-      (d.top || []).map((c) => `<tr><td data-label="Customer"><strong>${escapeHtml(c.name || "—")}</strong><br /><span class="muted">${escapeHtml(c.email)}</span></td><td data-label="Orders">${formatNumber(c.orders)}</td><td data-label="Paid spend">${formatCurrency(c.spend)}</td><td data-label="Last order">${formatDate(c.last_order_at)}</td><td data-label="Source">${c.referred ? "Ambassador referral" : "Direct"}</td></tr>`),
-      "No customer orders in this period."))}</div>`;
+    (d.top || []).map((c) => `<tr><td data-label="Customer"><strong>${escapeHtml(c.name || "—")}</strong><br /><span class="muted">${escapeHtml(c.email)}</span></td><td data-label="Orders">${formatNumber(c.orders)}</td><td data-label="Paid spend">${formatCurrency(c.spend)}</td><td data-label="Last order">${formatDate(c.last_order_at)}</td><td data-label="Source">${c.referred ? "Ambassador referral" : "Direct"}</td></tr>`),
+    "No customer orders in this period."))}</div>`;
 }
 
 async function renderLoyalty(el, w) {
@@ -419,9 +419,9 @@ async function renderAmbassadors(el, w) {
       ${card("Withdrawals awaiting payout", formatCurrency(d.withdrawals.pending_amount), `${formatNumber(d.withdrawals.pending_count)} request${num(d.withdrawals.pending_count) === 1 ? "" : "s"}`)}
     </div>
     <div style="margin-top:var(--sp-4)">${panel("Ambassador performance", tbl(["Ambassador", "Status", "Rate", "Referrals", "Qualifying orders", "Referred value", "Commission"],
-      (d.top || []).map((a) => `<tr><td data-label="Ambassador"><strong>${escapeHtml(a.display_name)}</strong><br /><span class="muted">${escapeHtml(a.ambassador_code || "")}</span></td><td data-label="Status">${escapeHtml(a.status)}</td><td data-label="Rate">${num(a.commission_rate)}%</td><td data-label="Referrals">${formatNumber(a.referrals)}</td><td data-label="Qualifying orders">${formatNumber(a.qualifying_orders)}</td><td data-label="Referred value">${formatCurrency(a.referred_value)}</td><td data-label="Commission">${formatCurrency(a.generated)}</td></tr>`),
-      "No ambassador activity yet. Approved ambassadors will appear here."), "Selected period")}</div>
-    <p class="adash-foot">Ambassador earnings are tracked separately from wallet balances and loyalty points. <a href="admin.html#ambassadors-section" style="color:var(--color-primary)">Manage ambassadors</a></p>`;
+    (d.top || []).map((a) => `<tr><td data-label="Ambassador"><strong>${escapeHtml(a.display_name)}</strong><br /><span class="muted">${escapeHtml(a.ambassador_code || "")}</span></td><td data-label="Status">${escapeHtml(a.status)}</td><td data-label="Rate">${num(a.commission_rate)}%</td><td data-label="Referrals">${formatNumber(a.referrals)}</td><td data-label="Qualifying orders">${formatNumber(a.qualifying_orders)}</td><td data-label="Referred value">${formatCurrency(a.referred_value)}</td><td data-label="Commission">${formatCurrency(a.generated)}</td></tr>`),
+    "No ambassador activity yet. Approved ambassadors will appear here."), "Selected period")}</div>
+    <p class="adash-foot">Ambassador earnings are tracked separately from wallet balances and loyalty points. <a href="admin#ambassadors-section" style="color:var(--color-primary)">Manage ambassadors</a></p>`;
 }
 
 async function renderFinance(el, w) {
@@ -478,8 +478,8 @@ async function renderProvider(el, w) {
       ${card("Slow processing", formatNumber(d.slow_processing), `Processing for over ${d.thresholds.pending_hours} h`)}
     </div>
     <div style="margin-top:var(--sp-4)">${panel("By provider", tbl(["Provider", "Orders", "Completed", "Cancelled / failed"],
-      (d.by_provider || []).map((p) => `<tr><td data-label="Provider">${escapeHtml(p.provider)}</td><td data-label="Orders">${formatNumber(p.orders)}</td><td data-label="Completed">${formatNumber(p.completed)}</td><td data-label="Cancelled / failed">${formatNumber(p.failed)}</td></tr>`),
-      "No provider orders in this period."))}</div>
+    (d.by_provider || []).map((p) => `<tr><td data-label="Provider">${escapeHtml(p.provider)}</td><td data-label="Orders">${formatNumber(p.orders)}</td><td data-label="Completed">${formatNumber(p.completed)}</td><td data-label="Cancelled / failed">${formatNumber(p.failed)}</td></tr>`),
+    "No provider orders in this period."))}</div>
     <p class="adash-foot">Failure counts use the status text returned by the provider. Provider balance isn't shown because the current integration doesn't read it.</p>`;
 }
 
@@ -530,14 +530,14 @@ export async function initInsightsPage() {
   if (!root) return;
   const user = AuthService.getCurrentUser();
   if (!user || user.role !== "admin") {
-    root.innerHTML = `<div class="empty-state"><h3>Admin access required</h3><p>BTECH INSIGHTS is available to administrators only.</p><a href="dashboard.html" class="btn btn--primary">Back to dashboard</a></div>`;
+    root.innerHTML = `<div class="empty-state"><h3>Admin access required</h3><p>BTECH INSIGHTS is available to administrators only.</p><a href="dashboard" class="btn btn--primary">Back to dashboard</a></div>`;
     return;
   }
   const today = new Date().toISOString().slice(0, 10);
   root.innerHTML = `
     <div class="page-head adash-head">
       <div><h1>BTECH INSIGHTS</h1><p class="muted">What is happening across BTECH SMM, what changed and what needs attention.</p></div>
-      <a href="admin.html" class="btn btn--secondary btn--sm">Back to Admin</a>
+      <a href="admin" class="btn btn--secondary btn--sm">Back to Admin</a>
     </div>
     <div class="ins-filters">
       <div class="ins-ranges" role="group" aria-label="Date range">${RANGES.map(([k, l]) => `<button type="button" data-ins-range="${k}" aria-pressed="${k === st.range}">${l}</button>`).join("")}</div>

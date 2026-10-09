@@ -141,6 +141,9 @@ async function requestPasswordReset({ email }) {
   if (!isValidEmail(email)) {
     return { ok: false, error: "Please enter a valid email address." };
   }
+  // Deliberately still "reset-password.html": Supabase only honours redirect URLs on its dashboard
+  // allow-list, so changing this before "/reset-password" is added there would break reset emails.
+  // The page itself still shows the clean /reset-password URL (see cleanAddressBar() in shell.js).
   const redirectTo = new URL("reset-password.html", window.location.href).toString();
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
   if (error) {
@@ -168,7 +171,7 @@ async function logout() {
 }
 
 /** Call AFTER AuthService.init() has resolved (see app.js bootstrap). */
-function requireAuth(redirectTo = "login.html") {
+function requireAuth(redirectTo = "login") {
   if (!isAuthenticated()) {
     window.location.href = redirectTo;
     return false;

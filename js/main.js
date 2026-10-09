@@ -45,7 +45,7 @@ function registerServiceWorker() {
 
 function guardAuthPages() {
   if (document.body.dataset.requiresAuth === "true") {
-    return AuthService.requireAuth("login.html");
+    return AuthService.requireAuth("login");
   }
   return true;
 }
@@ -136,7 +136,7 @@ async function boot() {
   if (!allowedToStay) return; // navigating away to login.html
 
   initNavigation();
-  claimPendingReferral().catch(() => {}); // server validates; never blocks the page
+  claimPendingReferral().catch(() => { }); // server validates; never blocks the page
   await initPage();
 }
 

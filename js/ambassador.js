@@ -20,7 +20,7 @@ import { createCropper, photoUrl, uploadPhoto, removePhoto } from "./photo.js";
 import { formatCurrency, formatNumber, formatDate, formatDateTime, escapeHtml, showToast, setButtonLoading } from "./utils.js";
 
 const referralLink = (code) => `${BUSINESS.website}/?ref=${encodeURIComponent(code)}`;
-const verifyLink = (id) => `${BUSINESS.website}/verify-ambassador.html?id=${encodeURIComponent(id)}`;
+const verifyLink = (id) => `${BUSINESS.website}/verify-ambassador?id=${encodeURIComponent(id)}`;
 
 const STATUS_BADGE = { approved: "completed", applicant: "pending", suspended: "pending", rejected: "cancelled", deactivated: "cancelled" };
 const STATUS_LABEL = { approved: "Active", applicant: "Pending review", suspended: "Suspended", rejected: "Not approved", deactivated: "Deactivated" };
@@ -438,7 +438,7 @@ export async function initVerifyPage() {
         <div><dt>Date issued</dt><dd>${data.issued_at ? formatDate(data.issued_at) : "—"}</dd></div>
       </dl>
       <div class="loyalty-actions" style="justify-content:center">
-        ${ok && data.referral_code ? `<a class="btn btn--primary" href="register.html?ref=${encodeURIComponent(data.referral_code)}">Join BTECH SMM</a>` : ""}
+        ${ok && data.referral_code ? `<a class="btn btn--primary" href="register?ref=${encodeURIComponent(data.referral_code)}">Join BTECH SMM</a>` : ""}
         <a class="btn btn--secondary" href="${BUSINESS.website}">Visit ${escapeHtml(BUSINESS.name)}</a>
       </div>
       <p class="form-hint" style="margin-top:var(--sp-4)">${escapeHtml(BUSINESS.email)} · ${escapeHtml(BUSINESS.phone)}</p>

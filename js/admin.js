@@ -24,7 +24,6 @@ import { supabase } from "./supabase.js";
 import { AuthService } from "./auth.js";
 import { ServicesService, ServicesData } from "./services.js";
 import { initLoyaltyAdmin } from "./loyalty-admin.js";
-import { initAmbassadorAdmin } from "./ambassador-admin.js";
 import { initAdminDashboard } from "./admin-dashboard.js";
 import { formatCurrency, formatNumber, formatDate, formatDateTime, escapeHtml, setText, debounce, setButtonLoading, showToast, generateId, friendlyError } from "./utils.js";
 
@@ -41,7 +40,7 @@ function renderRestricted() {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/></svg>
       <h3>Admin access required</h3>
       <p>Your account doesn't have admin access. Contact an existing admin if you believe this is a mistake.</p>
-      <a href="dashboard.html" class="btn btn--primary">Back to dashboard</a>
+      <a href="dashboard" class="btn btn--primary">Back to dashboard</a>
     </div>`;
 }
 
@@ -633,7 +632,6 @@ export async function initAdminPage() {
 
   await initServicesManagement();
   await initLoyaltyAdmin().catch((err) => console.error("Loyalty admin failed to load:", err));
-  await initAmbassadorAdmin().catch((err) => console.error("Ambassador admin failed to load:", err));
 }
 
 let _adminServices = [];

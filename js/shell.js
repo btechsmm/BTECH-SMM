@@ -24,6 +24,26 @@ function applyTheme() {
   }
 }
 
+/**
+ * Legacy-URL tidy-up. Render's redirect/rewrite rules are never applied to a path where a real file
+ * exists, so /login.html cannot be 301'd to /login on the server (the /login -> /login.html REWRITE
+ * handles the clean URL itself). Old bookmarks, installed-PWA start URLs, previously-issued
+ * password-reset emails and printed ambassador QR codes still point at *.html, so when one of those
+ * is opened the address bar is switched to the clean URL in place. Query string and hash are kept
+ * (Supabase tokens, ?ref=, ?id=). It only acts when the path ends in ".html", so it cannot loop,
+ * and it makes no extra request.
+ */
+function cleanAddressBar() {
+  try {
+    const { pathname, search, hash } = window.location;
+    if (!/\.html$/i.test(pathname)) return;
+    const clean = pathname.replace(/(^|\/)index\.html$/i, "$1").replace(/\.html$/i, "") || "/";
+    window.history.replaceState(window.history.state, "", clean + search + hash);
+  } catch {
+    /* history API unavailable: the .html URL keeps working, it just isn't tidied */
+  }
+}
+
 /** Supabase keeps the session in localStorage under sb-<project>-auth-token. */
 function looksSignedIn() {
   try {
@@ -56,5 +76,6 @@ function paintCustomerShell() {
   if (header && !header.className) header.className = "topbar";
 }
 
+cleanAddressBar();
 applyTheme();
 paintCustomerShell();

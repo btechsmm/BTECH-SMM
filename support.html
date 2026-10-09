@@ -1,78 +1,93 @@
-<!DOCTYPE html>
-<html lang="en">
+/**
+* BTECH SMM — Support Module (Supabase — Phase 4)
+* ----------------------------------------------------------------
+* FAQ stays static (bundled copy). Tickets now read/write the
+* `support_tickets` + `support_messages` tables (RLS-scoped to the
+* signed-in user). A logged-out visitor sees the FAQ only — ticket
+* creation requires an account, matching support.html's marketing
+* placement (no auth guard on the page itself).
+*/
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Support — BTECH SMM</title>
-  <meta name="description" content="Get help with BTECH SMM: FAQ, contact support and ticket tracking." />
-  <link rel="icon" type="image/png" href="assets/brand/icon-32.png" />
-  <link rel="apple-touch-icon" href="assets/brand/icon-180.png" />
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0A84FF" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/components.css" />
-  <link rel="stylesheet" href="css/dashboard.css" />
-  <link rel="stylesheet" href="css/responsive.css" />
-</head>
+import { supabase } from "./supabase.js";
+import { AuthService } from "./auth.js";
+import { FAQS } from "../data/demo-data.js";
+import { formatDateTime, generateId, escapeHtml, showToast, setButtonLoading } from "./utils.js";
 
-<body data-page="support" data-nav="customer">
-  <a href="#main" class="skip-link">Skip to content</a>
-  <header id="site-header"></header>
+function renderFaqs() {
+const container = document.querySelector("[data-faq-list]");
+if (!container) return;
+container.innerHTML = FAQS.map(
+(f, i) => `
+<details class="faq-item" ${i===0 ? "open" : "" }>
+  <summary>${escapeHtml(f.q)}</summary>
+  <p>${escapeHtml(f.a)}</p>
+</details>`
+).join("");
+}
 
-  <main id="main">
-    <div class="container section--tight section">
-      <div class="page-head">
-        <div>
-          <h1>Support</h1>
-          <p class="muted">Find answers below, or send us a message.</p>
-        </div>
-      </div>
+async function renderTickets() {
+const list = document.querySelector("[data-tickets-list]");
+const empty = document.querySelector("[data-tickets-empty]");
+if (!list) return;
 
-      <div class="two-col">
-        <div>
-          <h3 style="margin-bottom:var(--sp-4)">Frequently asked questions</h3>
-          <div data-faq-list></div>
-        </div>
+if (!AuthService.isAuthenticated()) {
+list.hidden = true;
+if (empty) {
+empty.hidden = false;
+empty.innerHTML = `<p>Log in to view or create support tickets.</p><a href="login" class="btn btn--primary btn--sm">Log
+  in</a>`;
+}
+return;
+}
 
-        <div>
-          <div class="card" style="margin-bottom:var(--sp-6)">
-            <h3>Create a support request</h3>
-            <form data-ticket-form novalidate>
-              <p class="form-error" data-form-error role="alert"></p>
-              <div class="form-field">
-                <label for="ticket-subject">Subject</label>
-                <input id="ticket-subject" name="subject" type="text" required />
-              </div>
-              <div class="form-field">
-                <label for="ticket-message">Message</label>
-                <textarea id="ticket-message" name="message" required></textarea>
-              </div>
-              <button type="submit" class="btn btn--primary btn--block">Submit Request</button>
-            </form>
-          </div>
+const { data, error } = await supabase.from("support_tickets").select("*").order("created_at", { ascending: false });
+if (error || !data || data.length === 0) {
+list.hidden = true;
+if (empty) empty.hidden = false;
+return;
+}
 
-          <div class="panel">
-            <div class="panel__head">
-              <h3>Your tickets</h3>
-            </div>
-            <div class="panel__body panel__body--padded" data-tickets-list></div>
-            <div class="empty-state empty-state--compact" data-tickets-empty hidden>
-              <p>You haven't submitted any support requests yet.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
+list.hidden = false;
+if (empty) empty.hidden = true;
+list.innerHTML = data
+.map(
+(t) => `
+<div class="ticket-card">
+  <div class="ticket-card__head">
+    <span class="order-id">${t.id}</span>
+    <span class="badge badge--status badge--${t.status === " open" ? "processing" : "completed" }">${t.status === "open"
+      ? "Open" : "Closed"}</span>
+  </div>
+  <p class="ticket-card__subject">${escapeHtml(t.subject)}</p>
+  <span class="txn-row__date">Opened ${formatDateTime(t.created_at)}</span>
+</div>`
+)
+.join("");
+}
 
-  <div id="bottom-nav-slot"></div>
+function initTicketForm() {
+const form = document.querySelector("[data-ticket-form]");
+if (!form) return;
 
-  <footer id="site-footer"></footer>
-  <script type="module" src="js/app.js"></script>
-</body>
+form.addEventListener("submit", async (e) => {
+e.preventDefault();
+const submitBtn = form.querySelector("[type=submit]");
+const errorBox = form.querySelector("[data-form-error]");
+const subject = form.querySelector("[name=subject]").value.trim();
+const message = form.querySelector("[name=message]").value.trim();
+errorBox.textContent = "";
 
-</html>
+if (!AuthService.isAuthenticated()) {
+errorBox.textContent = "Please log in to submit a support request.";
+return;
+}
+if (subject.length < 4) { errorBox.textContent="Please enter a short subject for your request." ; return; } if
+  (message.length < 10) { errorBox.textContent="Please describe your issue in a little more detail." ; return; }
+  setButtonLoading(submitBtn, true, "Sending…" ); const user=AuthService.getCurrentUser(); const
+  ticketId=generateId("TCK").toUpperCase(); const { error: ticketError }=await supabase.from("support_tickets").insert({
+  id: ticketId, user_id: user.id, subject, status: "open" }); if (!ticketError) { await
+  supabase.from("support_messages").insert({ ticket_id: ticketId, sender: "user" , message }); }
+  setButtonLoading(submitBtn, false); if (ticketError) {
+  errorBox.textContent="We couldn't submit your request. Please try again." ; return; } await renderTickets();
+  form.reset(); showToast("Support request submitted.", "success" ); }); } export async function initSupportPage() {
+  renderFaqs(); await renderTickets(); initTicketForm(); }

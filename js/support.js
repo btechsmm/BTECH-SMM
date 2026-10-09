@@ -34,7 +34,7 @@ async function renderTickets() {
     list.hidden = true;
     if (empty) {
       empty.hidden = false;
-      empty.innerHTML = `<p>Log in to view or create support tickets.</p><a href="login.html" class="btn btn--primary btn--sm">Log in</a>`;
+      empty.innerHTML = `<p>Log in to view or create support tickets.</p><a href="login" class="btn btn--primary btn--sm">Log in</a>`;
     }
     return;
   }

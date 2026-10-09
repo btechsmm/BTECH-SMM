@@ -12,27 +12,27 @@
 // the sidebar's grouping, icon set and included pages don't exactly match
 // either of the two legacy nav lists.
 export const SIDEBAR_MAIN_GUEST = [
-  { href: "index.html", label: "Home", key: "home", icon: "home" },
-  { href: "services.html", label: "Services", key: "services", icon: "services" },
-  { href: "index.html#how-it-works", label: "How It Works", key: "how-it-works", icon: "how-it-works" },
-  { href: "index.html#about", label: "About", key: "about", icon: "about" },
-  { href: "support.html", label: "Support", key: "support", icon: "support" },
+  { href: "/", label: "Home", key: "home", icon: "home" },
+  { href: "services", label: "Services", key: "services", icon: "services" },
+  { href: "/#how-it-works", label: "How It Works", key: "how-it-works", icon: "how-it-works" },
+  { href: "/#about", label: "About", key: "about", icon: "about" },
+  { href: "support", label: "Support", key: "support", icon: "support" },
 ];
-export const SIDEBAR_ACCOUNT_GUEST = [{ href: "login.html", label: "Dashboard", key: "dashboard-guest", icon: "dashboard" }];
+export const SIDEBAR_ACCOUNT_GUEST = [{ href: "login", label: "Dashboard", key: "dashboard-guest", icon: "dashboard" }];
 
 export const SIDEBAR_MAIN_AUTH = [
-  { href: "index.html", label: "Home", key: "home", icon: "home" },
-  { href: "services.html", label: "Services", key: "services", icon: "services" },
-  { href: "index.html#how-it-works", label: "How It Works", key: "how-it-works", icon: "how-it-works" },
-  { href: "support.html", label: "Support", key: "support", icon: "support" },
+  { href: "/", label: "Home", key: "home", icon: "home" },
+  { href: "services", label: "Services", key: "services", icon: "services" },
+  { href: "/#how-it-works", label: "How It Works", key: "how-it-works", icon: "how-it-works" },
+  { href: "support", label: "Support", key: "support", icon: "support" },
 ];
 export const SIDEBAR_ACCOUNT_AUTH = [
-  { href: "dashboard.html", label: "Dashboard", key: "dashboard", icon: "dashboard" },
-  { href: "orders.html", label: "My Orders", key: "orders", icon: "orders" },
-  { href: "wallet.html", label: "Wallet", key: "wallet", icon: "wallet" },
-  { href: "loyalty.html", label: "Loyalty &amp; Rewards", key: "loyalty", icon: "loyalty" },
-  { href: "ambassador.html", label: "Ambassador Program", key: "ambassador", icon: "ambassador" },
-  { href: "profile.html", label: "Profile", key: "profile", icon: "profile" },
+  { href: "dashboard", label: "Dashboard", key: "dashboard", icon: "dashboard" },
+  { href: "orders", label: "My Orders", key: "orders", icon: "orders" },
+  { href: "wallet", label: "Wallet", key: "wallet", icon: "wallet" },
+  { href: "loyalty", label: "Loyalty &amp; Rewards", key: "loyalty", icon: "loyalty" },
+  { href: "ambassador", label: "Ambassador Program", key: "ambassador", icon: "ambassador" },
+  { href: "profile", label: "Profile", key: "profile", icon: "profile" },
 ];
 
 export const ICONS = {
@@ -72,7 +72,7 @@ export function customerSidebar(activeKey, authed) {
   const account = authed ? SIDEBAR_ACCOUNT_AUTH : SIDEBAR_ACCOUNT_GUEST;
   return `
   <div class="sidebar__logo">
-    <a href="${authed ? "dashboard.html" : "index.html"}" aria-label="BTECH SMM home">
+    <a href="${authed ? "dashboard" : "/"}" aria-label="BTECH SMM home">
       <img src="assets/brand/btech-smm-logo.png" alt="BTECH SMM" width="150" height="31" />
     </a>
   </div>
@@ -90,4 +90,3 @@ export function customerSidebar(activeKey, authed) {
     </div>
   </div>`;
 }
-
