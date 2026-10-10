@@ -102,17 +102,19 @@ function findService(id) {
   return list().find((s) => s.id === id) || null;
 }
 
+// Glyph-only artwork (white, via currentColor) for each platform's circular brand badge. The badge colour
+// comes from .platform-badge--<id> in components.css, so the same artwork works at any size.
 const PLATFORM_ICONS = {
-  tiktok: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c.4 1.9 1.7 3.4 3.5 3.9v2.7c-1.3 0-2.5-.4-3.5-1.1v6.1c0 3-2.4 5.4-5.4 5.4S5.7 17.6 5.7 14.6c0-2.9 2.3-5.3 5.2-5.4v2.8c-1.4.1-2.5 1.2-2.5 2.6 0 1.4 1.2 2.6 2.6 2.6 1.4 0 2.6-1.2 2.6-2.6V3h2.9z"/></svg>`,
-  instagram: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.9" fill="currentColor" stroke="none"/></svg>`,
-  youtube: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10.5 9.5l5 2.5-5 2.5z" fill="currentColor" stroke="none"/></svg>`,
-  facebook: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 21v-7.5h2.5l.4-3H14V8.4c0-.9.2-1.5 1.5-1.5H17V4.3C16.7 4.2 15.8 4 14.7 4c-2.2 0-3.7 1.3-3.7 3.8v2.7H8.5v3H11V21h3z"/></svg>`,
-  x: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>`,
-  telegram: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M21 4L3 11l6 2m12-9l-4 16-8-6m12-10l-8 8"/></svg>`,
+  tiktok: `<svg viewBox="-12 -12 48 48" fill="currentColor" aria-hidden="true" focusable="false"><g transform="translate(-0.9 -0.9)" fill="#25f4ee"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></g><g transform="translate(0.9 0.9)" fill="#fe2c55"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></g><g fill="#fff"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></g></svg>`,
+  instagram: `<svg viewBox="-4.35 -4.35 32.69 32.69" fill="currentColor" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.2"/></svg>`,
+  youtube: `<svg viewBox="-8.69 -8.69 41.38 41.38" fill="currentColor" aria-hidden="true" focusable="false"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`,
+  facebook: `<svg viewBox="-2.43 -2.68 30.36 30.36" fill="currentColor" aria-hidden="true" focusable="false"><path d="M14 21v-7.5h2.5l.4-3H14V8.4c0-.9.2-1.5 1.5-1.5H17V4.3C16.7 4.2 15.8 4 14.7 4c-2.2 0-3.7 1.3-3.7 3.8v2.7H8.5v3H11V21h3z"/></svg>`,
+  x: `<svg viewBox="-14.09 -14.09 52.17 52.17" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>`,
+  telegram: `<svg viewBox="-0.58 0.99 23.27 23.27" fill="currentColor" aria-hidden="true" focusable="false"><path d="M16.906 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>`,
 };
 
 function platformIcon(id) {
-  return `<span class="platform-tag__icon" aria-hidden="true">${PLATFORM_ICONS[id] || ""}</span>`;
+  return `<span class="platform-tag__icon platform-badge platform-badge--${id}" aria-hidden="true">${PLATFORM_ICONS[id] || ""}</span>`;
 }
 
 function serviceCard(svc) {
@@ -161,7 +163,7 @@ function categoryTile(categoryId, platformId, count) {
 function platformTile(platformId, count) {
   return `
   <a class="catalogue-tile" data-reveal href="services?platform=${platformId}">
-    <span class="catalogue-tile__icon catalogue-tile__icon--${platformId}" aria-hidden="true">${PLATFORM_ICONS[platformId] || ""}</span>
+    <span class="catalogue-tile__icon platform-badge platform-badge--${platformId}" aria-hidden="true">${PLATFORM_ICONS[platformId] || ""}</span>
     <span class="catalogue-tile__label">${platformLabel(platformId)}</span>
     <span class="catalogue-tile__count">${count} service${count === 1 ? "" : "s"}</span>
   </a>`;

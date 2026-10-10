@@ -24,6 +24,7 @@ import { supabase } from "./supabase.js";
 import { AuthService } from "./auth.js";
 import { ServicesService, ServicesData } from "./services.js";
 import { initLoyaltyAdmin } from "./loyalty-admin.js";
+import { initAmbassadorAdmin } from "./ambassador-admin.js";
 import { initAdminDashboard } from "./admin-dashboard.js";
 import { formatCurrency, formatNumber, formatDate, formatDateTime, escapeHtml, setText, debounce, setButtonLoading, showToast, generateId, friendlyError } from "./utils.js";
 
@@ -631,7 +632,15 @@ export async function initAdminPage() {
   }
 
   await initServicesManagement();
-  await initLoyaltyAdmin().catch((err) => console.error("Loyalty admin failed to load:", err));
+  // Independent panels: one failing to load must not take the other down.
+  await Promise.all([
+    initLoyaltyAdmin().catch((err) => console.error("Loyalty admin failed to load:", err)),
+    initAmbassadorAdmin().catch((err) => {
+      console.error("Ambassador admin failed to load:", err);
+      const box = document.querySelector("[data-ambassador-admin]");
+      if (box) box.innerHTML = `<div class="panel__body panel__body--padded"><p class="muted">Unable to load Ambassador Management right now. Please refresh and try again.</p></div>`;
+    }),
+  ]);
 }
 
 let _adminServices = [];

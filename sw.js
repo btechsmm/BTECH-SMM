@@ -23,6 +23,8 @@
  * even though they took effect immediately server-side. Supabase
  * requests must always hit the network live.
  *
+ * v20: Ambassador Management panel wired up in admin.js.
+ * v19: new platform icons (components.css + services.js).
  * v18: UI polish (new CSS/JS). Static assets are served cache-first, so the bump is what makes returning
  * visitors pick up the new styles.
  *
@@ -36,7 +38,7 @@
  * handler.
  */
 
-const CACHE_VERSION = "btechsmm-v18";
+const CACHE_VERSION = "btechsmm-v20";
 // Pages are listed by their clean URL (Render rewrites /login -> login.html). offline.html is kept as a
 // real file name on purpose: it is the fixed fallback served by the fetch handler below.
 const PRECACHE_URLS = [

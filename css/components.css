@@ -744,16 +744,11 @@
 }
 
 .platform-tag__icon {
-  display: inline-flex;
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-}
-
-.platform-tag__icon svg {
-  width: 100%;
-  height: 100%;
-  display: block;
+  width: 18px;
+  height: 18px;
+  /* sits on the text baseline when used inline (e.g. the order details "Platform" row) */
+  vertical-align: -4px;
+  box-shadow: none;
 }
 
 /* ---------- Catalogue browsing (platform/service-type tiles) ---------- */
@@ -792,20 +787,8 @@
 }
 
 .catalogue-tile__icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  color: #fff;
-  background: var(--color-primary);
-  flex-shrink: 0;
-}
-
-.catalogue-tile__icon svg {
-  width: 20px;
-  height: 20px;
+  width: 48px;
+  height: 48px;
 }
 
 .catalogue-tile__label {
@@ -818,42 +801,70 @@
   color: var(--text-secondary);
 }
 
-/* Recognizable per-platform brand treatment instead of one uniform blue —
-   solid brand colors, not decorative gradients, with one narrow exception
-   (Instagram) whose brand identity IS its signature multicolor gradient. */
-.catalogue-tile__icon--facebook {
+.loyalty-admin-head select {
+  padding: 8px 32px 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-page);
+  color: var(--text-primary);
+  font-size: var(--fs-sm);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.loyalty-admin-head select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+/* ---------- Platform badges ----------
+   Circular brand icons shared by the catalogue tiles, service-card tags, orders and admin. The artwork
+   (white glyphs) lives in services.js; the colour per platform is set here. Solid brand colours, with
+   Instagram's signature gradient as the one recognisable exception. */
+.platform-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--color-primary);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+}
+
+.platform-badge svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.platform-badge--facebook {
   background: #1877f2;
 }
 
-.catalogue-tile__icon--instagram {
-  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+.platform-badge--instagram {
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
 }
 
-.catalogue-tile__icon--telegram {
+.platform-badge--telegram {
   background: #229ed9;
 }
 
-.catalogue-tile__icon--youtube {
+.platform-badge--youtube {
   background: #ff0000;
 }
 
-.catalogue-tile__icon--tiktok {
+.platform-badge--tiktok,
+.platform-badge--x {
   background: #000;
-  border: 2px solid;
-  border-image: linear-gradient(135deg, #25f4ee, #fe2c55) 1;
 }
 
-/* X: contrast is matched to BTECH's own card surface in each theme, not to
-   X's own app-icon convention — black-on-white reads on a light card,
-   white-on-black reads on a dark one. */
-.catalogue-tile__icon--x {
-  background: #000;
-  color: #fff;
-}
-
-:root[data-theme="dark"] .catalogue-tile__icon--x {
-  background: #fff;
-  color: #000;
+/* The black icons (X, TikTok) would disappear on a dark card, so they get a thin light ring there. */
+:root[data-theme="dark"] .platform-badge--tiktok,
+:root[data-theme="dark"] .platform-badge--x {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
 [data-services-breadcrumb] a {

@@ -31,7 +31,7 @@ export const SIDEBAR_ACCOUNT_AUTH = [
   { href: "orders", label: "My Orders", key: "orders", icon: "orders" },
   { href: "wallet", label: "Wallet", key: "wallet", icon: "wallet" },
   { href: "loyalty", label: "Loyalty &amp; Rewards", key: "loyalty", icon: "loyalty" },
-  { href: "ambassador", label: "Ambassador Program", key: "ambassador", icon: "ambassador" },
+  { href: "ambassador", label: "Ambassador Portal", key: "ambassador", icon: "ambassador" },
   { href: "profile", label: "Profile", key: "profile", icon: "profile" },
 ];
 
