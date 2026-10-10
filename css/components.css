@@ -14,7 +14,7 @@
   font-size: var(--fs-sm);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
+  transition: transform var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
   white-space: nowrap;
 }
 
@@ -23,13 +23,16 @@
 }
 
 .btn--primary {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-deep));
+  background: var(--primary-solid);
   color: #fff;
-  box-shadow: 0 6px 18px rgba(10, 132, 255, 0.28);
 }
 
 .btn--primary:hover {
-  box-shadow: 0 8px 22px rgba(10, 132, 255, 0.38);
+  background: var(--color-deep);
+}
+
+.btn--primary:active {
+  background: #004bbd;
 }
 
 .btn--secondary {
@@ -41,6 +44,7 @@
 .btn--secondary:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
 }
 
 .btn--ghost {
@@ -57,6 +61,10 @@
   color: #fff;
 }
 
+.btn--danger:hover {
+  background: #b91c1c;
+}
+
 .btn--sm {
   padding: 9px 16px;
   font-size: var(--fs-xs);
@@ -71,10 +79,16 @@
   width: 100%;
 }
 
-.btn:disabled,
-.btn.is-loading {
-  opacity: 0.75;
+.btn:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
+  transform: none;
+}
+
+/* Loading reads differently from disabled: slightly stronger, with a busy cursor + the spinner. */
+.btn.is-loading {
+  opacity: 0.85;
+  cursor: progress;
 }
 
 .link-btn {
@@ -85,6 +99,16 @@
   font-size: var(--fs-sm);
   cursor: pointer;
   padding: 0;
+  transition: color var(--transition-fast);
+}
+
+.link-btn:hover {
+  color: var(--color-deep);
+  text-decoration: underline;
+}
+
+:root[data-theme="dark"] .link-btn:hover {
+  color: #7db8ff;
 }
 
 .icon-btn {
@@ -98,7 +122,7 @@
   background: var(--surface-card);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: border-color var(--transition-fast), color var(--transition-fast);
+  transition: border-color var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
 }
 
 .icon-btn svg {
@@ -106,9 +130,18 @@
   height: 18px;
 }
 
+.icon-btn {
+  flex-shrink: 0;
+}
+
 .icon-btn:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
+  background: var(--surface-sunken);
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
 }
 
 /* ---------- Header / Navigation ---------- */
@@ -118,8 +151,7 @@
   left: 0;
   right: 0;
   height: var(--header-height);
-  background: color-mix(in srgb, var(--surface-card) 92%, transparent);
-  backdrop-filter: blur(10px);
+  background: var(--surface-card);
   border-bottom: 1px solid var(--border-color);
   z-index: 200;
 }
@@ -140,6 +172,21 @@
 .brand__logo {
   height: 26px;
   width: auto;
+}
+
+/* The logo is dark/blue artwork: on the dark theme's dark header and footer it nearly vanished.
+   A white plate matches how the sidebar already presents it. */
+:root[data-theme="dark"] .auth-card__logo img {
+  background: #fff;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+}
+
+:root[data-theme="dark"] .brand__logo {
+  background: #fff;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  box-sizing: content-box;
 }
 
 .nav-desktop {
@@ -244,10 +291,23 @@
   gap: var(--sp-1);
   z-index: 199;
   box-shadow: var(--shadow-md);
+  /* Long link lists (customer menu has 10+) must scroll instead of running off short phone screens. */
+  max-height: calc(100vh - var(--header-height));
+  max-height: calc(100dvh - var(--header-height));
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .nav-mobile--open {
   display: flex;
+  animation: nav-drop 160ms ease-out;
+}
+
+@keyframes nav-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
 }
 
 .nav-mobile .nav-link,
@@ -296,6 +356,7 @@
   top: calc(100% + 10px);
   right: 0;
   width: 320px;
+  max-width: calc(100vw - (var(--sp-4) * 2));
   max-height: 420px;
   background: var(--surface-card);
   border: 1px solid var(--border-color);
@@ -477,7 +538,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   z-index: 250;
   transition: transform var(--transition-fast), background var(--transition-fast), opacity var(--transition-fast);
 }
@@ -497,9 +558,11 @@
   transform: scale(0.85);
 }
 
-@media (max-width: 720px) {
-  body[data-nav="app"] .whatsapp-fab {
-    bottom: calc(var(--bottom-nav-height) + var(--sp-4));
+@media (max-width: 767px) {
+
+  body[data-nav="app"] .whatsapp-fab,
+  body.has-sidebar .whatsapp-fab {
+    bottom: calc(var(--bottom-nav-height) + var(--sp-4) + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -586,7 +649,8 @@
 /* ---------- Services grid ---------- */
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  /* auto-fill (not auto-fit) so a search with one result stays card-sized instead of stretching full width */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   gap: var(--sp-5);
 }
 
@@ -603,14 +667,17 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
+  min-width: 0;
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
 }
 
-.service-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--border-color));
+@media (hover: hover) {
+  .service-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: color-mix(in srgb, var(--color-primary) 40%, var(--border-color));
+  }
 }
 
 .service-card:active {
@@ -627,12 +694,15 @@
 .service-card__name {
   margin: 0;
   font-size: var(--fs-md);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 .service-card__desc {
   margin: 0;
   font-size: var(--fs-sm);
   flex-grow: 1;
+  overflow-wrap: anywhere;
 }
 
 .service-card__meta {
@@ -708,7 +778,12 @@
 
 .catalogue-tile:hover {
   border-color: var(--color-primary);
-  transform: translateY(-2px);
+}
+
+@media (hover: hover) {
+  .catalogue-tile:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .catalogue-tile:active {
@@ -801,6 +876,7 @@
   border-radius: var(--radius-full);
   font-size: 11px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .badge--accent {
@@ -810,7 +886,7 @@
 
 .badge--success {
   background: color-mix(in srgb, var(--color-success) 15%, transparent);
-  color: var(--color-success);
+  color: #15803d;
 }
 
 .badge--status.badge--pending {
@@ -825,12 +901,30 @@
 
 .badge--status.badge--completed {
   background: var(--balance-positive-bg);
-  color: var(--balance-positive);
+  color: #15803d;
 }
 
 .badge--status.badge--cancelled {
   background: var(--balance-negative-bg);
-  color: var(--balance-negative);
+  color: #b91c1c;
+}
+
+:root[data-theme="dark"] .badge--accent,
+:root[data-theme="dark"] .badge--status.badge--processing {
+  color: #7db8ff;
+}
+
+:root[data-theme="dark"] .badge--success,
+:root[data-theme="dark"] .badge--status.badge--completed {
+  color: #4ade80;
+}
+
+:root[data-theme="dark"] .badge--status.badge--pending {
+  color: #fbbf24;
+}
+
+:root[data-theme="dark"] .badge--status.badge--cancelled {
+  color: #f87171;
 }
 
 /* ---------- Forms ---------- */
@@ -963,7 +1057,6 @@
 .auth-card {
   max-width: 440px;
   margin: var(--sp-10) auto;
-  margin-top: 70px;
 }
 
 .auth-card__logo {
@@ -1006,6 +1099,13 @@
 
 .filters-bar select {
   min-width: 150px;
+  flex: 0 1 220px;
+}
+
+@media (max-width: 640px) {
+  .filters-bar select {
+    flex: 1 1 100%;
+  }
 }
 
 .filters-bar input,
@@ -1018,6 +1118,16 @@
   font-size: var(--fs-sm);
   width: 100%;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.filters-bar select {
+  width: auto;
+}
+
+@media (max-width: 640px) {
+  .filters-bar select {
+    width: 100%;
+  }
 }
 
 .filters-bar input::placeholder {
@@ -1052,6 +1162,43 @@
   overflow: hidden;
 }
 
+/* Wrapper used by every table (orders, loyalty, ambassador, insights, admin) but previously never
+   styled: wide tables ran off the page with no way to reach the right-hand columns. It is now the
+   scroll container, so a table can never push columns out of reach. */
+.table-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+.table-card>.data-table {
+  border: none;
+  border-radius: 0;
+}
+
+@media (min-width: 721px) {
+
+  .table-card .data-table th,
+  .table-card .data-table td {
+    padding: var(--sp-3) 10px;
+  }
+
+  /* A percentage max-width does nothing inside an auto-layout table cell, so long URLs forced the
+     whole table to thousands of pixels wide. A fixed cap makes the ellipsis actually apply. */
+  .table-card .data-table td .truncate {
+    max-width: 160px;
+  }
+
+  .table-card .data-table td[data-label="Amount"],
+  .table-card .data-table td[data-label="Quantity"],
+  .table-card .data-table td[data-label="Date"] {
+    white-space: nowrap;
+  }
+}
+
 .data-table th,
 .data-table td {
   text-align: left;
@@ -1084,7 +1231,6 @@
 
 .order-row:active {
   background: var(--surface-sunken);
-  transform: scale(0.995);
 }
 
 .order-id {
@@ -1181,12 +1327,19 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5, 11, 24, 0.55);
+  background: rgba(5, 11, 24, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--sp-5);
   z-index: 300;
+  animation: overlay-in 140ms ease-out;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
 }
 
 .modal-overlay[hidden] {
@@ -1195,11 +1348,23 @@
 
 .modal {
   background: var(--surface-card);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: var(--sp-6);
   width: 100%;
   max-width: 420px;
+  max-height: calc(100vh - (var(--sp-5) * 2));
+  max-height: calc(100dvh - (var(--sp-5) * 2));
+  overflow-y: auto;
   box-shadow: var(--shadow-lg);
+  animation: modal-in 180ms ease-out;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
 }
 
 .modal__head {
@@ -1217,7 +1382,14 @@
 .stat-grid {
   display: grid;
   gap: var(--sp-4);
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+}
+
+/* Phones: two columns instead of one very tall card per row */
+@media (max-width: 600px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .stat-card {
@@ -1225,6 +1397,8 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: var(--sp-5);
+  min-width: 0;
+  container-type: inline-size;
 }
 
 .stat-card__label {
@@ -1232,13 +1406,46 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-secondary);
-  margin-bottom: var(--sp-2);
+  margin: 0 0 var(--sp-2);
 }
 
+/* <p> elements get the muted body colour from style.css, which made every headline number look
+   disabled. Values are the most important thing on a stat card, so they use the primary text colour.
+   The size follows the card's own width (container query) so amounts like "Ksh 14,775.00" fit on one
+   line and, at worst, wrap at the space, never in the middle of a number. */
 .stat-card__value {
-  font-size: var(--fs-xl);
+  font-size: var(--fs-md);
   font-weight: 800;
   font-family: var(--font-display);
+  color: var(--text-primary);
+  line-height: 1.15;
+  margin: 0;
+}
+
+@container (min-width: 170px) {
+  .stat-card__value {
+    font-size: var(--fs-lg);
+  }
+}
+
+@container (min-width: 250px) {
+  .stat-card__value {
+    font-size: var(--fs-xl);
+  }
+}
+
+.stat-card--accent .stat-card__value {
+  color: var(--balance-text);
+}
+
+@media (max-width: 600px) {
+  .stat-card {
+    padding: var(--sp-4);
+  }
+
+  .stat-card--accent {
+    grid-column: 1 / -1;
+  }
 }
 
 .stat-card--accent {
@@ -1265,6 +1472,10 @@
 .recent-order:last-child,
 .txn-row:last-child {
   border-bottom: none;
+}
+
+.recent-order {
+  transition: background-color var(--transition-fast);
 }
 
 .recent-order:hover {
@@ -1317,6 +1528,8 @@
 
 .txn-row__body {
   flex-grow: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .txn-row__title {
@@ -1376,7 +1589,7 @@
   height: 16px;
   border-radius: 50%;
   background: var(--border-strong);
-  border: 3px solid var(--surface-page);
+  border: 3px solid var(--surface-card);
   box-shadow: 0 0 0 2px var(--border-strong);
 }
 
@@ -1676,7 +1889,7 @@
 }
 
 :root[data-theme="dark"] .wallet-panel__row--total dd {
-  color: var(--color-primary);
+  color: #7db8ff;
 }
 
 :root[data-theme="dark"] .wallet-panel__row--need dd,
@@ -1996,8 +2209,7 @@
   left: 0;
   right: 0;
   height: var(--header-height);
-  background: color-mix(in srgb, var(--surface-card) 96%, transparent);
-  backdrop-filter: blur(8px);
+  background: var(--surface-card);
   border-bottom: 1px solid var(--border-color);
   z-index: 210;
 }
@@ -2043,7 +2255,7 @@
   border-radius: var(--radius-full);
   background: var(--soft-blue);
   border: 1px solid color-mix(in srgb, var(--nav-active-blue) 20%, transparent);
-  transition: background var(--transition-fast);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
 }
 
 .wallet-pill:hover {
@@ -2081,6 +2293,13 @@
   font-size: var(--fs-sm);
   font-weight: 800;
   color: var(--nav-active-blue);
+  white-space: nowrap;
+}
+
+:root[data-theme="dark"] .wallet-pill__value,
+:root[data-theme="dark"] .wallet-pill__icon,
+:root[data-theme="dark"] .admin-portal-btn {
+  color: #7db8ff;
 }
 
 @media (max-width: 420px) {
@@ -2149,6 +2368,11 @@ body.has-sidebar main {
   padding-top: var(--header-height);
 }
 
+/* On the home page the hero sits above <main> and already clears the header itself. */
+body.has-sidebar[data-page="home"] main {
+  padding-top: 0;
+}
+
 body.has-sidebar .site-footer {
   background: var(--surface-navy);
   color: var(--text-on-navy);
@@ -2157,6 +2381,7 @@ body.has-sidebar .site-footer {
 @media (min-width: 768px) {
 
   body.has-sidebar main,
+  body.has-sidebar .hero,
   body.has-sidebar .site-footer {
     margin-left: var(--sidebar-width);
   }

@@ -30,6 +30,13 @@
   --text-inverse: #ffffff;
   --text-on-navy: #cdd9ee;
 
+  /* Headings use the primary text colour so blue stays meaningful (links, actions, active states).
+     To bring the old blue headings back, set this to var(--color-primary). */
+  --heading-color: var(--text-primary);
+  /* Solid button blue: the brand blue, darkened just enough for white text to pass WCAG AA
+     (4.76:1; the plain brand blue #0a84ff is only 3.65:1). */
+  --primary-solid: #0b6ee8;
+
   --accent: var(--color-primary);
   --accent-deep: var(--color-deep);
 
@@ -107,12 +114,13 @@
 
 :root[data-theme="dark"] {
   --surface-page: var(--color-dark);
-  --surface-card: #0b1730;
-  --surface-raised: #101f3d;
+  --surface-card: #0e1b37;
+  --surface-raised: #132549;
   --surface-sunken: #081326;
   --surface-navy: #030a1a;
-  --border-color: #1c2c4d;
-  --border-strong: #29406b;
+  --border-color: #26406b;
+  --border-strong: #34517f;
+  --soft-blue: #12294f;
 
   --text-primary: #f1f5fb;
   --text-secondary: #92a2c2;
@@ -178,14 +186,18 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: sans-serif;
-  font-weight: 600;
-  line-height: 1.2;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.25;
   margin: 0 0 var(--sp-3);
   letter-spacing: -0.01em;
-  color: rgb(0, 123, 255);
-  text-transform: capitalize;
-  font-size: 9px;
+  color: var(--heading-color);
+  font-size: var(--fs-base);
+}
+
+h3,
+h4 {
+  font-weight: 600;
 }
 
 /* Fluid type scale: scales smoothly from small phones (320px) up to
@@ -226,12 +238,17 @@ p {
   padding: 0 var(--sp-5);
 }
 
+/* Longhand on purpose: the `padding: X 0` shorthand also zeroed the left/right padding of every element
+   that is both .container and .section (nearly every page's main wrapper), which removed the page gutters.
+   responsive.css documents the same bug and only fixed it at <=480px. */
 .section {
-  padding: var(--sp-16) 0;
+  padding-top: var(--sp-16);
+  padding-bottom: var(--sp-16);
 }
 
 .section--tight {
-  padding: var(--sp-10) 0;
+  padding-top: var(--sp-10);
+  padding-bottom: var(--sp-10);
 }
 
 .section--sunken {
@@ -276,36 +293,28 @@ p {
 }
 
 /* Page shell: reserve space so fixed header / bottom nav don't overlap content */
+/* One consistent offset below the fixed header for every page (previously a later `padding: 10px`
+   silently cancelled the header offset, which pages worked around with inline margins). The page-load
+   fade was removed: it dimmed the whole page on every navigation just before skeletons swapped in. */
 main {
   display: block;
   padding-top: var(--header-height);
   min-height: 60vh;
-  animation: page-fade-in 220ms ease;
-  padding: 10px;
-  margin-top: 10px;
 }
 
-@keyframes page-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* The home page's hero sits above <main>, so <main> must not add a second header offset there. */
+body[data-page="home"] main {
+  padding-top: 0;
 }
 
+/* Opacity only: no movement, and cheap to composite. */
 [data-reveal] {
   opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 300ms ease, transform 300ms ease;
+  transition: opacity 220ms ease;
 }
 
 [data-reveal].reveal-visible {
   opacity: 1;
-  transform: translateY(0);
 }
 
 body[data-nav="app"] main {
@@ -336,26 +345,21 @@ body[data-nav="app"] main {
 
 /* Loading / skeleton */
 .skeleton {
-  background: linear-gradient(90deg, var(--surface-sunken) 25%, var(--border-color) 50%, var(--surface-sunken) 75%);
-  background-size: 200% 100%;
-  animation: skeleton-sweep 1.4s ease-in-out infinite;
+  background: color-mix(in srgb, var(--border-color) 60%, var(--surface-card));
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
   border-radius: var(--radius-sm);
 }
 
-@keyframes skeleton-sweep {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.55;
   }
 }
 
 /* ---------- Hero ---------- */
 .hero {
   position: relative;
-  background: radial-gradient(circle at 15% 15%, #0d2a5c 0%, var(--color-navy) 45%, var(--color-dark) 100%);
+  background: var(--color-navy);
   color: #fff;
   overflow: hidden;
   padding: calc(var(--sp-20) + var(--sp-6)) 0 var(--sp-20);
@@ -373,14 +377,7 @@ body[data-nav="app"] main {
   height: 620px;
   transform: translateY(-50%);
   opacity: 0.1;
-  animation: spin-slow 40s linear infinite;
   pointer-events: none;
-}
-
-@keyframes spin-slow {
-  to {
-    transform: translateY(-50%) rotate(360deg);
-  }
 }
 
 .hero__inner {
@@ -390,6 +387,7 @@ body[data-nav="app"] main {
 }
 
 .hero h1 {
+  color: #fff;
   font-size: clamp(2.2rem, 5vw, var(--fs-3xl));
   margin-bottom: var(--sp-4);
 }
@@ -445,7 +443,7 @@ body[data-nav="app"] main {
 
 /* ---------- CTA banner ---------- */
 .cta-banner {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-deep));
+  background: var(--color-deep);
   border-radius: var(--radius-lg);
   padding: var(--sp-12) var(--sp-8);
   text-align: center;

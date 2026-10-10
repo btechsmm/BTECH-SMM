@@ -252,3 +252,122 @@ body {
     --container-width: 1280px;
   }
 }
+
+/* ==========================================================================
+   UI polish: layout fixes found while testing at 375 / 768 / 1280px
+   ========================================================================== */
+
+/* Customer pages beside the sidebar have much less room than the viewport width suggests
+   (768px screen - 216px sidebar = ~550px content), so stack tables into labelled cards across the
+   whole tablet range instead of only below 720px. Only customer pages with the sidebar are affected;
+   admin tables keep their layout. */
+@media (min-width: 768px) and (max-width: 1279px) {
+  body.has-sidebar .table-card {
+    border: none;
+    background: transparent;
+    overflow: visible;
+  }
+
+  body.has-sidebar .data-table thead {
+    display: none;
+  }
+
+  body.has-sidebar .data-table,
+  body.has-sidebar .data-table tbody,
+  body.has-sidebar .data-table tr,
+  body.has-sidebar .data-table td {
+    display: block;
+    width: 100%;
+  }
+
+  body.has-sidebar .data-table {
+    border: none;
+    background: transparent;
+  }
+
+  body.has-sidebar .data-table tr {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--sp-3);
+    padding: var(--sp-2) var(--sp-4);
+    background: var(--surface-card);
+  }
+
+  body.has-sidebar .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-3);
+    border-bottom: 1px dashed var(--border-color);
+    padding: var(--sp-2) 0;
+    font-size: var(--fs-sm);
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  body.has-sidebar .data-table td:last-child {
+    border-bottom: none;
+  }
+
+  body.has-sidebar .data-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+  }
+
+  body.has-sidebar .data-table .truncate {
+    max-width: 240px;
+  }
+}
+
+/* The stacked-card tables on phones: the table-card wrapper must not draw a second border around them. */
+@media (max-width: 720px) {
+  .table-card {
+    border: none;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .data-table {
+    border: none;
+    background: transparent;
+  }
+}
+
+/* Phones: 16px form text stops iOS Safari zooming the page when a field is focused; comfortable tap sizes. */
+@media (max-width: 720px) {
+
+  .filters-bar input,
+  .filters-bar select,
+  .admin-users-search {
+    font-size: 16px;
+  }
+
+  .btn--sm {
+    min-height: 40px;
+  }
+}
+
+/* Dashboard side-by-side layout needs the room: fall back to one column before it gets cramped. */
+@media (max-width: 1100px) {
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Any page that shows the mobile bottom navigation (customer AND admin pages): keep the footer's last
+   line and the WhatsApp button clear of it. The older rule targeted body[data-nav="app"], which no page
+   actually uses, so the copyright bar ended up hidden behind the nav when scrolled to the bottom. */
+@media (max-width: 720px) {
+  body:has(.bottom-nav) .site-footer {
+    padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+  }
+
+  body:has(.bottom-nav) .whatsapp-fab {
+    bottom: calc(var(--bottom-nav-height) + var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  }
+}

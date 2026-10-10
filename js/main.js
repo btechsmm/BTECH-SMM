@@ -124,8 +124,14 @@ function fillBusinessDetails() {
   });
 }
 
+// Pages that need the catalogue. Its request does not depend on the session (the query is the same
+// public one for guests and customers), so it starts straight away instead of waiting behind the
+// auth check: the two used to run back to back, which added a full network round trip to these pages.
+const NEEDS_SERVICES = new Set(["home", "services", "service-order", "orders", "order-details", "dashboard"]);
+
 async function boot() {
   applyStoredTheme();
+  if (NEEDS_SERVICES.has(document.body.dataset.page)) ServicesService.preload();
   registerServiceWorker();
   captureReferral(); // remember ?ref=CODE before anything can navigate away
   fillBusinessDetails();

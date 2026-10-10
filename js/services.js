@@ -26,6 +26,7 @@ import { formatCurrency, formatNumber, escapeHtml, debounce, initScrollReveal } 
 let _services = null;
 let _hasError = false;
 let _isOfflineFallback = false;
+let _loading = null; // in-flight preload(), so overlapping callers share ONE request
 
 function mapRow(row) {
   return {
@@ -42,8 +43,13 @@ function mapRow(row) {
   };
 }
 
-async function preload() {
-  if (_services) return _services;
+function preload() {
+  if (_services) return Promise.resolve(_services);
+  if (!_loading) _loading = loadServices().finally(() => (_loading = null));
+  return _loading;
+}
+
+async function loadServices() {
   try {
     const { data, error } = await supabase
       .from("services")
