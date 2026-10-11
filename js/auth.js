@@ -15,7 +15,7 @@
  * if the session changes later (sign-out in another tab, etc.).
  */
 
-import { supabase } from "./supabase.js";
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase.js";
 import { isValidEmail } from "./utils.js";
 import { getPendingReferral } from "./referral.js";
 
@@ -170,6 +170,68 @@ async function logout() {
   _profile = null;
 }
 
+/* ------------------------------ Google sign-in ------------------------------ */
+// One OAuth request at a time: the page is about to be replaced by Google, so this stays set on success.
+let _googleInFlight = false;
+
+/**
+ * Asks Supabase which providers are switched on. Returns false ONLY when Supabase positively says Google is
+ * disabled. A network/CORS hiccup returns true (try anyway): this check exists purely so a project that
+ * isn't configured yet shows a clear message here, instead of sending people to a raw JSON error page.
+ */
+async function isGoogleEnabled() {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 4000);
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: SUPABASE_ANON_KEY }, signal: ctrl.signal });
+    if (!res.ok) return true;
+    const settings = await res.json();
+    return settings?.external?.google !== false;
+  } catch {
+    return true;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Starts "Continue with Google". On success the browser is sent to Google and this page unloads, so the
+ * caller should leave its button in the loading state. Supabase returns the user to /login (which must be on
+ * the project's Redirect URLs list) with a session, or with an error that shell.js captures.
+ * The destination is always this site's own /login: no user-supplied redirect is accepted anywhere.
+ */
+async function signInWithGoogle() {
+  if (_googleInFlight) return { ok: false, busy: true };
+  _googleInFlight = true;
+  try {
+    if (!(await isGoogleEnabled())) {
+      console.warn("[auth] Google provider is disabled in Supabase (Authentication > Providers).");
+      _googleInFlight = false;
+      return { ok: false, error: "Google sign-in isn't available right now. Please use your email and password, or try again later." };
+    }
+    const redirectTo = `${window.location.origin}/login`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo, queryParams: { prompt: "select_account" } },
+    });
+    if (error) {
+      console.warn("[auth] signInWithOAuth failed:", error.code || error.status || error.name);
+      _googleInFlight = false;
+      return { ok: false, error: "We couldn't start Google sign-in. Please try again." };
+    }
+    return { ok: true };
+  } catch (err) {
+    console.warn("[auth] Google sign-in request failed:", err?.name || err);
+    _googleInFlight = false;
+    return { ok: false, error: "Couldn't reach the sign-in service. Please check your connection and try again." };
+  }
+}
+
+/** Re-arms the button when the browser restores this page from its back/forward cache. */
+function resetGoogleSignIn() {
+  _googleInFlight = false;
+}
+
 /** Call AFTER AuthService.init() has resolved (see app.js bootstrap). */
 function requireAuth(redirectTo = "login") {
   if (!isAuthenticated()) {
@@ -185,6 +247,8 @@ export const AuthService = {
   register,
   requestPasswordReset,
   resetPassword,
+  signInWithGoogle,
+  resetGoogleSignIn,
   logout,
   isAuthenticated,
   getCurrentUser,

@@ -559,7 +559,6 @@
 }
 
 @media (max-width: 767px) {
-
   body[data-nav="app"] .whatsapp-fab,
   body.has-sidebar .whatsapp-fab {
     bottom: calc(var(--bottom-nav-height) + var(--sp-4) + env(safe-area-inset-bottom, 0px));
@@ -1070,6 +1069,99 @@
   margin: var(--sp-10) auto;
 }
 
+/* ---------- Google sign-in (login + register) ---------- */
+.auth-oauth {
+  margin-top: var(--sp-5);
+}
+
+/* Google's own button guidelines: white fill, thin grey border, dark text, the multicolour G. Kept white in
+   both themes so the logo always sits on the background it was designed for. */
+.btn--google {
+  gap: var(--sp-3);
+  background: #fff;
+  color: #1f1f1f;
+  border: 1px solid #747775;
+  font-weight: 600;
+}
+
+.btn--google:hover {
+  background: #f8f9fa;
+  border-color: #5f6368;
+}
+
+.btn--google:active {
+  background: #f1f3f4;
+}
+
+.btn--google .google-g {
+  flex-shrink: 0;
+}
+
+/* the shared spinner is white-on-white here */
+.btn--google .spinner {
+  border-color: rgba(31, 31, 31, 0.25);
+  border-top-color: #1f1f1f;
+}
+
+/* no reserved gap while empty; room above the message when one appears */
+.auth-oauth .form-error {
+  min-height: 0;
+  margin: var(--sp-3) 0 0;
+}
+
+.auth-oauth .form-error:empty {
+  display: none;
+}
+
+.auth-note {
+  margin: var(--sp-3) 0 0;
+  font-size: var(--fs-xs);
+  text-align: center;
+}
+
+.auth-note a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: var(--sp-5) 0;
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+/* Returning from Google with a session in the URL: show a short message instead of flashing the form
+   (set by shell.js; cleared by auth-forms.js if the user ends up staying on the page). */
+html[data-auth-return] .auth-card form,
+html[data-auth-return] .auth-oauth,
+html[data-auth-return] .auth-divider,
+html[data-auth-return] .auth-switch {
+  display: none;
+}
+
+html[data-auth-return] .auth-card::after {
+  content: "Signing you in…";
+  display: block;
+  padding: var(--sp-6) 0 var(--sp-2);
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
 .auth-card__logo {
   display: flex;
   justify-content: center;
@@ -1185,13 +1277,12 @@
   max-width: 100%;
 }
 
-.table-card>.data-table {
+.table-card > .data-table {
   border: none;
   border-radius: 0;
 }
 
 @media (min-width: 721px) {
-
   .table-card .data-table th,
   .table-card .data-table td {
     padding: var(--sp-3) 10px;

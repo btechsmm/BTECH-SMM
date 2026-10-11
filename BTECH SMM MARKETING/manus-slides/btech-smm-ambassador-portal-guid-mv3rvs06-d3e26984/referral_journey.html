@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; color: #1E293B; background: #FFFFFF; }
+    .slide-container { width: 1280px; min-height: 720px; background: #FFFFFF; display: flex; flex-direction: column; padding: 60px; position: relative; }
+    .header { margin-bottom: 40px; }
+    h2 { font-size: 32px; font-weight: 700; color: #0A192F; border-left: 4px solid #1D4ED8; padding-left: 16px; }
+    .flow-container { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 40px 0; }
+    .flow-node { width: 240px; text-align: center; }
+    .icon-box { width: 80px; height: 80px; background: #E0E7FF; border-top: 4px solid #0A192F; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #1D4ED8; font-size: 32px; }
+    .flow-node h3 { font-size: 18px; font-weight: 700; color: #0A192F; margin-bottom: 8px; }
+    .flow-node p { font-size: 14px; color: #64748B; line-height: 1.4; }
+    .arrow { color: #CBD5E1; font-size: 24px; margin-top: -60px; }
+    .disclaimer-card { margin-top: 40px; background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 8px; padding: 20px; display: flex; align-items: center; }
+    .disclaimer-card i { color: #64748B; font-size: 20px; margin-right: 16px; }
+    .disclaimer-card p { font-size: 14px; color: #64748B; }
+    .footer { position: absolute; bottom: 60px; right: 60px; font-size: 14px; color: #64748B; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="header">
+      <h2>From share to qualifying order</h2>
+    </div>
+    <div class="flow-container">
+      <div class="flow-node">
+        <div class="icon-box"><i class="fas fa-link"></i></div>
+        <h3>Share Link</h3>
+        <p>Your unique link is shared with a potential customer.</p>
+      </div>
+      <div class="arrow"><i class="fas fa-chevron-right"></i></div>
+      <div class="flow-node">
+        <div class="icon-box"><i class="fas fa-user-plus"></i></div>
+        <h3>New Signup</h3>
+        <p>The visitor signs up for an account at btechsmm.store.</p>
+      </div>
+      <div class="arrow"><i class="fas fa-chevron-right"></i></div>
+      <div class="flow-node">
+        <div class="icon-box"><i class="fas fa-shopping-cart"></i></div>
+        <h3>Qualifying Order</h3>
+        <p>The customer places and confirms a qualifying service order.</p>
+      </div>
+      <div class="arrow"><i class="fas fa-chevron-right"></i></div>
+      <div class="flow-node">
+        <div class="icon-box"><i class="fas fa-coins"></i></div>
+        <h3>Commission</h3>
+        <p>Commission is recorded in your dashboard for the order.</p>
+      </div>
+    </div>
+    <div class="disclaimer-card">
+      <i class="fas fa-info-circle"></i>
+      <p>A link click or a signup does not automatically generate commission. Commission eligibility depends on the completion of qualifying activity according to current programme rules.</p>
+    </div>
+    <div class="footer">Page 4</div>
+  </div>
+</body>
+</html>

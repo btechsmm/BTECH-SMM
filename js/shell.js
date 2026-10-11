@@ -44,6 +44,52 @@ function cleanAddressBar() {
   }
 }
 
+/**
+ * Google sign-in return, handled here because this runs BEFORE supabase-js looks at the URL.
+ *  - Failure/cancel: Supabase sends the user back to /login with ?error=... or #error=... . Only the short
+ *    error CODES are kept (never the description text, which can contain internal detail) and the error
+ *    parameters are removed from the address bar.
+ *  - Success: the URL carries the session in its #fragment. supabase-js consumes it, and until then the
+ *    login/register form is swapped for a "Signing you in..." message (see html[data-auth-return] in CSS).
+ * Only login/register are touched, so password-recovery and email-confirmation links behave as before.
+ */
+let _authRedirectError = null;
+const AUTH_ERROR_KEYS = ["error", "error_code", "error_description"];
+
+function captureAuthRedirect() {
+  try {
+    const page = document.body?.dataset.page;
+    if (page !== "login" && page !== "register") return;
+    const url = new URL(window.location.href);
+    const hash = new URLSearchParams(url.hash.replace(/^#/, ""));
+    const query = url.searchParams;
+    const pick = (k) => hash.get(k) || query.get(k) || "";
+    const clean = (v) => (/^[A-Za-z0-9_.-]{1,64}$/.test(v) ? v : "");
+
+    if (AUTH_ERROR_KEYS.some((k) => pick(k))) {
+      _authRedirectError = { error: clean(pick("error")), code: clean(pick("error_code")) };
+      AUTH_ERROR_KEYS.forEach((k) => {
+        hash.delete(k);
+        query.delete(k);
+      });
+      const qs = query.toString();
+      const hs = hash.toString();
+      window.history.replaceState(window.history.state, "", url.pathname + (qs ? `?${qs}` : "") + (hs ? `#${hs}` : ""));
+    } else if (hash.get("access_token")) {
+      document.documentElement.dataset.authReturn = "1";
+    }
+  } catch {
+    /* worst case the form just shows as normal */
+  }
+}
+
+/** The Google-return error captured at page load (once), as { error, code } of short codes, or null. */
+export function takeAuthRedirectError() {
+  const e = _authRedirectError;
+  _authRedirectError = null;
+  return e;
+}
+
 /** Supabase keeps the session in localStorage under sb-<project>-auth-token. */
 function looksSignedIn() {
   try {
@@ -77,5 +123,6 @@ function paintCustomerShell() {
 }
 
 cleanAddressBar();
+captureAuthRedirect();
 applyTheme();
 paintCustomerShell();

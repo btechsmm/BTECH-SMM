@@ -23,6 +23,7 @@
  * even though they took effect immediately server-side. Supabase
  * requests must always hit the network live.
  *
+ * v21: Continue with Google (auth.js, auth-forms.js, shell.js, supabase.js, login/register pages, CSS).
  * v20: Ambassador Management panel wired up in admin.js.
  * v19: new platform icons (components.css + services.js).
  * v18: UI polish (new CSS/JS). Static assets are served cache-first, so the bump is what makes returning
@@ -38,7 +39,7 @@
  * handler.
  */
 
-const CACHE_VERSION = "btechsmm-v20";
+const CACHE_VERSION = "btechsmm-v21";
 // Pages are listed by their clean URL (Render rewrites /login -> login.html). offline.html is kept as a
 // real file name on purpose: it is the fixed fallback served by the fetch handler below.
 const PRECACHE_URLS = [
