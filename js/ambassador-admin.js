@@ -19,9 +19,14 @@ let settings = null;
 let rows = [];
 let currentId = null;
 const filter = { status: "", q: "" };
+let appRows = [];
+let appCurrent = null;
+const appFilter = { status: "", q: "" };
 
 const BADGE = { applicant: "pending", approved: "completed", suspended: "processing", rejected: "cancelled", deactivated: "cancelled" };
 const LABEL = { applicant: "Pending", approved: "Active", suspended: "Suspended", rejected: "Rejected", deactivated: "Deactivated" };
+const APP_BADGE = { submitted: "pending", clarification_requested: "processing", approved: "completed", declined: "cancelled" };
+const APP_LABEL = { submitted: "Pending review", clarification_requested: "Clarification requested", approved: "Approved", declined: "Declined" };
 const WD_BADGE = { pending: "pending", approved: "processing", paid: "completed", rejected: "cancelled" };
 
 const avatar = (a, big = false) => (a.photo_path ? `<img class="amb-avatar amb-avatar--img${big ? " amb-avatar--lg" : ""}" src="${escapeHtml(photoUrl(a.photo_path))}" alt="" />` : `<span class="amb-avatar${big ? " amb-avatar--lg" : ""}" aria-hidden="true">${escapeHtml((a.display_name || "?")[0].toUpperCase())}</span>`);
@@ -301,12 +306,177 @@ function withdrawalModal(action, id, amount, phone) {
   });
 }
 
+/* ------------------------------ applications ----------------------------- */
+// Formal applications live in ambassador_applications (migration_ambassador_applications.sql).
+// Everything here goes through admin_* RPCs that re-check is_admin() on the server. Approving calls the
+// existing ambassador activation (admin_review_ambassador) inside the same database transaction.
+const MIGRATION_HINT = "Run migration_ambassador_applications.sql in the Supabase SQL editor.";
+
+async function loadAppCounts() {
+  const el = root.querySelector("[data-app-counts]");
+  if (!el) return;
+  try {
+    const c = await rpc("admin_ambassador_application_counts", {});
+    const bits = [];
+    if (c.submitted) bits.push(`${c.submitted} awaiting review`);
+    if (c.clarification_requested) bits.push(`${c.clarification_requested} awaiting reply`);
+    el.textContent = bits.length ? `· ${bits.join(" · ")}` : "";
+  } catch {
+    el.textContent = "";
+  }
+}
+
+async function loadApplications() {
+  const body = root.querySelector("[data-app-body]");
+  try {
+    appRows = await rpc("admin_list_ambassador_applications", { p_status: appFilter.status || null, p_search: appFilter.q || null, p_limit: 50, p_offset: 0 });
+  } catch (ex) {
+    appRows = [];
+    body.innerHTML = `<tr><td colspan="6">${escapeHtml(ex.message)}. ${MIGRATION_HINT}</td></tr>`;
+    return;
+  }
+  loadAppCounts();
+  if (!appRows.length) {
+    body.innerHTML = `<tr><td colspan="6">${appFilter.status || appFilter.q ? "No applications match this filter." : "No applications yet. Submitted applications will appear here."}</td></tr>`;
+    return;
+  }
+  body.innerHTML = appRows
+    .map(
+      (a) => `<tr>
+      <td data-label="Reference"><strong>${escapeHtml(a.reference)}</strong></td>
+      <td data-label="Applicant"><div class="amb-cell">${avatar({ photo_path: a.photo_path, display_name: a.full_name })}<span><strong>${escapeHtml(a.full_name)}</strong>${a.conflict_declared ? ` <span class="badge badge--status badge--processing">Conflict declared</span>` : ""}<br /><span class="muted">${escapeHtml(a.email)}</span></span></div></td>
+      <td data-label="Phone">${escapeHtml(a.phone)}</td>
+      <td data-label="Submitted">${formatDateTime(a.submitted_at)}</td>
+      <td data-label="Status">${badge(APP_BADGE, APP_LABEL, a.status)}</td>
+      <td data-label="Actions"><button type="button" class="btn btn--secondary btn--sm" data-app-open="${a.id}">Review</button></td></tr>`
+    )
+    .join("");
+}
+
+const evLabel = { submitted: "Application submitted", clarification_requested: "Clarification requested", applicant_replied: "Applicant replied", approved: "Approved", declined: "Declined", note: "Private note" };
+
+function ackList(a) {
+  const items = [
+    [a.ack_accuracy, "Information is accurate and complete"],
+    [a.ack_honest_promotion, "Will promote honestly, without false or misleading claims"],
+    [a.ack_privacy, "Understands how the application information is used (Privacy Policy)"],
+    [a.ack_no_guarantee, "Understands there is no guarantee of approval or earnings"],
+    [a.ack_badge_display, "Agrees photo, name and Ambassador ID may appear on the badge and verification page"],
+  ];
+  return `<ul class="amb-mini">${items.map(([ok, t]) => `<li><span>${ok ? "✓" : "✗"} ${escapeHtml(t)}</span></li>`).join("")}</ul>`;
+}
+
+const block = (title, text) => `<div class="app-block"><h4>${title}</h4><p class="app-text">${text ? escapeHtml(text) : `<span class="muted">Not provided</span>`}</p></div>`;
+
+async function renderAppDetail(id) {
+  appCurrent = id;
+  const box = root.querySelector("[data-app-detail]");
+  box.hidden = false;
+  box.innerHTML = `<div class="panel__body panel__body--padded"><div class="skeleton" style="height:140px"></div></div>`;
+  let r;
+  try {
+    r = await rpc("admin_get_ambassador_application", { p_id: id });
+  } catch (ex) {
+    box.innerHTML = `<div class="panel__body panel__body--padded"><p class="form-error">${escapeHtml(ex.message)}</p></div>`;
+    return;
+  }
+  if (appCurrent !== id) return;
+  const a = r.application;
+  const acct = r.account || {};
+  const open = a.status === "submitted" || a.status === "clarification_requested";
+  const digits = String(a.phone).replace(/\D/g, "");
+
+  box.innerHTML = `
+    <div class="panel__head"><h3 class="amb-cell">${avatar({ photo_path: a.photo_path, display_name: a.full_name }, true)}<span>${escapeHtml(a.full_name)} ${badge(APP_BADGE, APP_LABEL, a.status)}<br /><span class="muted" style="font-size:var(--fs-sm)">${escapeHtml(a.reference)}</span></span></h3>
+      <button type="button" class="btn btn--secondary btn--sm" data-app-close>Close</button></div>
+    <div class="panel__body panel__body--padded">
+      <dl class="amb-hero__meta amb-hero__meta--admin">
+        <div><dt>Submitted</dt><dd>${formatDateTime(a.submitted_at)}</dd></div>
+        <div><dt>Confirmed by</dt><dd>${escapeHtml(a.confirmation_name)}<br /><span class="muted">${formatDateTime(a.confirmed_at)}</span></dd></div>
+        <div><dt>Phone / WhatsApp</dt><dd>${escapeHtml(a.phone)} <a href="https://wa.me/${escapeHtml(digits)}" target="_blank" rel="noopener noreferrer" class="muted">WhatsApp</a></dd></div>
+        <div><dt>Email</dt><dd><a href="mailto:${escapeHtml(a.email)}">${escapeHtml(a.email)}</a></dd></div>
+        <div><dt>BTECH SMM username / ID</dt><dd>${a.btech_username ? escapeHtml(a.btech_username) : "—"}</dd></div>
+        <div><dt>Badge name</dt><dd>${escapeHtml(a.display_name || a.full_name)}</dd></div>
+        <div><dt>Linked account</dt><dd>${escapeHtml(acct.name || "—")} · ${escapeHtml(acct.email || "—")}</dd></div>
+        <div><dt>Ambassador record</dt><dd>${r.ambassador_status ? escapeHtml(r.ambassador_status) : "None (created only on approval)"}</dd></div>
+        ${a.decided_at ? `<div><dt>Decided</dt><dd>${formatDateTime(a.decided_at)}</dd></div>` : ""}
+      </dl>
+      ${block("Why they want to join", a.motivation)}
+      ${block("Relevant experience or skills", a.experience)}
+      ${block("Promotion channels and communities", a.promotion_channels)}
+      <div class="app-block"><h4>Conflict of interest</h4>
+        <p class="app-text">${a.conflict_declared ? `<strong>Declared.</strong> ${escapeHtml(a.conflict_details || "")}` : "None declared."}</p></div>
+      <div class="app-block"><h4>Acknowledgements</h4>${ackList(a)}</div>
+      <div class="loyalty-actions" style="margin:var(--sp-4) 0">
+        ${open ? `<button type="button" class="btn btn--primary btn--sm" data-app-act="approve" data-id="${a.id}">Approve</button>
+        <button type="button" class="btn btn--secondary btn--sm" data-app-act="clarify" data-id="${a.id}">Request clarification</button>
+        <button type="button" class="btn btn--secondary btn--sm" data-app-act="decline" data-id="${a.id}">Decline</button>` : ""}
+        <button type="button" class="btn btn--secondary btn--sm" data-app-act="note" data-id="${a.id}">Add private note</button>
+      </div>
+      <h4 class="app-h">Decision history</h4>
+      <ul class="amb-mini app-timeline">
+        ${(r.events || []).map((e) => `<li><span><strong>${evLabel[e.event] || escapeHtml(e.event)}</strong> · ${formatDateTime(e.at)} · ${escapeHtml(e.actor || (e.actor_role === "applicant" ? "Applicant" : "System"))}${e.event === "note" ? ` <span class="badge badge--status badge--processing">Private</span>` : ""}${e.message ? `<br /><span class="app-text">${escapeHtml(e.message)}</span>` : ""}</span></li>`).join("")}
+      </ul>
+    </div>`;
+  box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function appClarifyModal(a) {
+  openModal({
+    title: `Request clarification — ${a.reference}`,
+    submitLabel: "Send request",
+    fieldsHtml: field("Message to the applicant (they will see this)", `<textarea name="message" rows="4" required></textarea>`, "Do not ask for passwords, OTPs, PINs, bank details or identity documents."),
+    onSubmit: async (v) => {
+      if (!v.message?.trim()) return "Write what you need clarified.";
+      await rpc("admin_request_application_clarification", { p_id: a.id, p_message: v.message.trim() });
+      showToast("Clarification requested.", "success");
+      await refreshAll();
+    },
+  });
+}
+
+function appDecisionModal(a, decision) {
+  const approve = decision === "approve";
+  openModal({
+    title: `${approve ? "Approve" : "Decline"} — ${a.reference}`,
+    submitLabel: approve ? "Approve application" : "Decline application",
+    fieldsHtml:
+      (approve
+        ? `<p class="loyalty-note" style="margin-bottom:var(--sp-3)">This activates ${escapeHtml(a.full_name)} as an ambassador through the existing activation process: a permanent Ambassador ID and referral code are assigned, at the default commission rate of ${Number(settings?.default_commission_rate ?? 0)}%.</p>`
+        : `<p class="loyalty-note" style="margin-bottom:var(--sp-3)">Declining does not create an ambassador account.</p>`) +
+      field(approve ? "Private note (optional, recorded in the audit log)" : "Reason (required, private, recorded in the audit log)", `<textarea name="note" rows="2" ${approve ? "" : "required"}></textarea>`) +
+      field("Message to the applicant (optional, they will see this)", `<textarea name="message" rows="3"></textarea>`),
+    onSubmit: async (v) => {
+      if (!approve && !v.note?.trim()) return "A reason is required.";
+      await rpc("admin_decide_ambassador_application", { p_id: a.id, p_decision: decision, p_message: v.message || null, p_note: v.note || null });
+      showToast(approve ? "Application approved. The ambassador is now active." : "Application declined.", "success");
+      await refreshAll();
+    },
+  });
+}
+
+function appNoteModal(a) {
+  openModal({
+    title: `Private note — ${a.reference}`,
+    submitLabel: "Save note",
+    fieldsHtml: field("Note (visible to admins only)", `<textarea name="note" rows="4" required></textarea>`),
+    onSubmit: async (v) => {
+      if (!v.note?.trim()) return "Enter a note.";
+      await rpc("admin_add_application_note", { p_id: a.id, p_note: v.note.trim() });
+      showToast("Note saved.", "success");
+      await renderAppDetail(a.id);
+    },
+  });
+}
+
 /* ---------------------------------- audit -------------------------------- */
 const AUDIT_LABEL = {
   ambassador_approve: "Ambassador approved", ambassador_reject: "Application rejected", ambassador_suspend: "Ambassador suspended",
   ambassador_reactivate: "Ambassador reactivated", ambassador_deactivate: "Ambassador deactivated", commission_rate_change: "Commission rate changed",
   commission_adjustment: "Commission adjusted", referral_code_change: "Referral code changed", ambassador_notes: "Notes updated",
   withdrawal_approve: "Withdrawal approved", withdrawal_reject: "Withdrawal rejected", withdrawal_mark_paid: "Withdrawal paid",
+  ambassador_application_clarification: "Application clarification requested", ambassador_application_approve: "Application approved",
+  ambassador_application_decline: "Application declined", ambassador_application_note: "Application note added",
   ambassador_settings_update: "Program settings changed", business_setting_change: "Business setting changed",
 };
 
@@ -317,6 +487,7 @@ function auditDetail(a) {
   if (a.action === "commission_adjustment") return `${n.amount > 0 ? "+" : ""}${formatCurrency(n.amount)}`;
   if (a.action === "referral_code_change") return `${p.referral_code || "—"} → ${n.referral_code}`;
   if (a.action.startsWith("withdrawal_")) return `${formatCurrency(n.amount)} · ${p.status} → ${n.status}`;
+  if (a.action.startsWith("ambassador_application_")) return `${n.reference || ""}${n.status ? ` · ${p.status || "—"} → ${n.status}` : ""}${n.ambassador_code ? ` (${n.ambassador_code})` : ""}`;
   if (a.action.startsWith("ambassador_") && n.status) return `${p.status} → ${n.status}${n.ambassador_code ? ` (${n.ambassador_code})` : ""}`;
   return "";
 }
@@ -334,8 +505,9 @@ async function loadAudit() {
 }
 
 async function refreshAll() {
-  await Promise.all([loadList(), loadWithdrawals(), loadAudit()]);
+  await Promise.all([loadApplications(), loadList(), loadWithdrawals(), loadAudit()]);
   if (currentId) await renderDetail(currentId);
+  if (appCurrent) await renderAppDetail(appCurrent);
 }
 
 /* ---------------------------------- init --------------------------------- */
@@ -352,6 +524,19 @@ export async function initAmbassadorAdmin() {
 
   root.innerHTML = `
     <div class="panel__body panel__body--padded loyalty-admin-block"><h3>Program settings</h3>${settingsHtml()}</div>
+    <div class="panel__body panel__body--padded loyalty-admin-block" id="ambassador-applications">
+      <h3>Applications <span class="muted" data-app-counts></span></h3>
+      <p class="form-hint" style="margin:0 0 var(--sp-3)">Applications are reviewed here. Submitting an application never activates an ambassador; only an approval does.</p>
+      <div class="filters-bar" style="margin-bottom:var(--sp-3)">
+        <div class="filters-bar__search"><input type="search" placeholder="Search reference, name, email, phone or username…" aria-label="Search applications" data-app-search /></div>
+        <select data-app-status aria-label="Filter applications by status">
+          <option value="">All statuses</option><option value="submitted">Pending review</option><option value="clarification_requested">Clarification requested</option>
+          <option value="approved">Approved</option><option value="declined">Declined</option>
+        </select>
+      </div>
+      ${table(["Reference", "Applicant", "Phone", "Submitted", "Status", "Actions"], "data-app-body")}
+    </div>
+    <div class="panel" data-app-detail hidden style="margin:0 var(--sp-5) var(--sp-5)"></div>
     <div class="panel__body panel__body--padded loyalty-admin-block">
       <h3>Ambassadors</h3>
       <div class="filters-bar" style="margin-bottom:var(--sp-3)">
@@ -380,6 +565,17 @@ export async function initAmbassadorAdmin() {
     if (!t) return;
     const find = (id) => rows.find((r) => r.id === id);
     try {
+      if (t.dataset.appOpen) return await renderAppDetail(t.dataset.appOpen);
+      if (t.hasAttribute("data-app-close")) {
+        appCurrent = null;
+        return void (root.querySelector("[data-app-detail]").hidden = true);
+      }
+      if (t.dataset.appAct) {
+        const a = await rpc("admin_get_ambassador_application", { p_id: t.dataset.id }).then((r) => r.application);
+        if (t.dataset.appAct === "clarify") return appClarifyModal(a);
+        if (t.dataset.appAct === "note") return appNoteModal(a);
+        return appDecisionModal(a, t.dataset.appAct);
+      }
       if (t.dataset.ambManage) return await renderDetail(t.dataset.ambManage);
       if (t.hasAttribute("data-amb-close")) {
         currentId = null;
@@ -400,10 +596,14 @@ export async function initAmbassadorAdmin() {
     }
   });
 
+  const appSearch = root.querySelector("[data-app-search]");
+  appSearch.addEventListener("input", debounce(() => { appFilter.q = appSearch.value.trim(); loadApplications(); }, 250));
+  root.querySelector("[data-app-status]").addEventListener("change", (e) => { appFilter.status = e.target.value; loadApplications(); });
+
   const search = root.querySelector("[data-amb-search]");
   search.addEventListener("input", debounce(() => { filter.q = search.value.trim(); loadList(); }, 250));
   root.querySelector("[data-amb-status]").addEventListener("change", (e) => { filter.status = e.target.value; loadList(); });
   root.querySelector("[data-amb-wd-filter]").addEventListener("change", (e) => { wdFilter = e.target.value; loadWithdrawals(); });
 
-  await Promise.all([loadList(), loadWithdrawals(), loadAudit()]);
+  await Promise.all([loadApplications(), loadList(), loadWithdrawals(), loadAudit()]);
 }

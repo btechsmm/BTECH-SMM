@@ -1,0 +1,451 @@
+/* ==========================================================================
+   BTECH SMM — Ambassador: Rewards Card, balances and the application form
+   Loaded after components.css on ambassador.html and admin.html.
+   Brand: primary blue #1677E8, deep navy #0B2148, white.
+   ========================================================================== */
+
+/* ------------------------------ rewards card ------------------------------ */
+.rw {
+  --rw-blue: #1677e8;
+  --rw-navy: #0b2148;
+  --rw-navy-2: #10295a;
+  margin-bottom: var(--sp-6);
+}
+
+.rw-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  width: 100%;
+  max-width: 440px;
+  aspect-ratio: 1.586 / 1;
+  /* standard card proportion */
+  min-height: 236px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: clamp(18px, 4vw, 26px);
+  border-radius: 20px;
+  color: #fff;
+  background: linear-gradient(160deg, var(--rw-navy-2) 0%, var(--rw-navy) 62%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 34px rgba(11, 33, 72, 0.28);
+}
+
+.rw-card::after {
+  /* thin brand-blue edge along the bottom */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--rw-blue);
+}
+
+.rw-card__arcs {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.rw-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.rw-card__logo {
+  display: block;
+  height: 26px;
+  width: auto;
+  /* The official logo is shown unaltered on a white plate, so it is legible and correct
+     whatever its own background is (no colour filtering of the brand artwork). */
+  box-sizing: content-box;
+  padding: 5px 10px;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.rw-card__tag {
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #b9cbea;
+  text-align: right;
+}
+
+.rw-card__person {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+.rw-card__photo {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: var(--rw-blue);
+}
+
+.rw-card__photo--initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: var(--fs-md);
+  color: #fff;
+}
+
+.rw-card__who {
+  min-width: 0;
+}
+
+.rw-card__name {
+  margin: 0 0 6px;
+  font-size: clamp(1.05rem, 3.6vw, 1.3rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+.rw-card__status {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.rw-card__status--approved {
+  background: var(--rw-blue);
+  border-color: var(--rw-blue);
+}
+
+.rw-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-8);
+  margin: 0;
+}
+
+.rw-card__meta dt {
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9fb3d9;
+}
+
+.rw-card__meta dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
+.rw-card__fine {
+  margin: 0;
+  font-size: 0.6875rem;
+  color: #9fb3d9;
+}
+
+/* -------------------------------- balances -------------------------------- */
+.rw-balances {
+  margin-top: var(--sp-5);
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.rw-primary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4) var(--sp-6);
+  padding: clamp(18px, 3vw, 26px);
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--rw-blue);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.rw-primary__label,
+.rw-stat__label {
+  margin: 0;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.rw-primary__value {
+  margin: var(--sp-1) 0;
+  font-size: clamp(1.9rem, 6vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.rw-primary__sub,
+.rw-stat__sub {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.rw-primary__cta {
+  min-height: 48px;
+  padding-inline: var(--sp-8);
+}
+
+.rw-primary__cta[disabled] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.rw-secondary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+
+.rw-stat {
+  padding: var(--sp-5);
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.rw-stat__value {
+  margin: var(--sp-1) 0 var(--sp-1);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .rw-card {
+    max-width: none;
+  }
+
+  .rw-secondary {
+    grid-template-columns: 1fr;
+  }
+
+  .rw-primary {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rw-primary__cta {
+    width: 100%;
+  }
+}
+
+/* ----------------------------- application form ---------------------------- */
+.apply-cta .panel__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+
+.apply-cta[hidden],
+.apply-panel[hidden],
+.apply-panel [hidden] {
+  display: none !important;
+  /* .form-field's display must not override the hidden attribute */
+}
+
+.apply-warning {
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-md);
+  background: var(--balance-pending-bg);
+  border: 1px solid var(--balance-pending);
+  color: var(--text-primary);
+  font-size: var(--fs-sm);
+}
+
+.apply-set {
+  margin: 0 0 var(--sp-6);
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.apply-set legend {
+  padding: 0;
+  margin-bottom: var(--sp-3);
+  font-weight: 700;
+  font-size: var(--fs-md);
+  color: var(--heading-color);
+}
+
+.apply-set .req {
+  color: var(--color-error);
+}
+
+.apply-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--sp-4);
+}
+
+.apply-check {
+  margin-bottom: var(--sp-3);
+}
+
+/* The shared ".form-field input" rule (width:100%, padding, border) also matches checkboxes, which stretched
+   each box across the row and pushed its text to the far right. Reset it for acknowledgement checkboxes. */
+.apply-check .checkbox-row {
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: var(--sp-3);
+  cursor: pointer;
+  text-align: left;
+}
+
+.apply-check .checkbox-row input[type="checkbox"] {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  margin: 2px 0 0;
+  padding: 0;
+  accent-color: var(--rw-blue, #1677e8);
+  cursor: pointer;
+}
+
+.apply-check .checkbox-row span {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.apply-check .form-error {
+  margin-left: calc(18px + var(--sp-3));
+}
+
+.apply-radios {
+  display: grid;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.apply-form [aria-invalid="true"],
+.apply-panel [aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+/* spam trap: off-screen, not display:none (some bots skip display:none fields) */
+.apply-hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.apply-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+.apply-ref {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-8);
+  margin: var(--sp-4) 0;
+}
+
+.apply-ref dt {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.apply-ref dd {
+  margin: 2px 0 0;
+  font-weight: 700;
+}
+
+.apply-quote {
+  margin: var(--sp-3) 0;
+  padding: var(--sp-3) var(--sp-4);
+  border-left: 4px solid var(--rw-blue, #1677e8);
+  background: var(--surface-sunken);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.apply-history {
+  margin-top: var(--sp-4);
+}
+
+.apply-msg,
+.app-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .apply-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .apply-actions .btn {
+    flex: 1 1 100%;
+  }
+}
+
+/* ------------------------------ admin: applications ------------------------ */
+.app-block {
+  margin: var(--sp-4) 0;
+}
+
+.app-block h4,
+.app-h {
+  margin: 0 0 var(--sp-1);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.app-block .app-text {
+  margin: 0;
+}
+
+.app-timeline li {
+  align-items: flex-start;
+}

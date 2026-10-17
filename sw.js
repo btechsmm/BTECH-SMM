@@ -23,6 +23,7 @@
  * even though they took effect immediately server-side. Supabase
  * requests must always hit the network live.
  *
+ * v22: Ambassador application form, admin Applications panel and the Ambassador Rewards Card (ambassador-apply.js, ambassador.css, ambassador.js, ambassador-admin.js).
  * v21: Continue with Google (auth.js, auth-forms.js, shell.js, supabase.js, login/register pages, CSS).
  * v20: Ambassador Management panel wired up in admin.js.
  * v19: new platform icons (components.css + services.js).
@@ -39,7 +40,7 @@
  * handler.
  */
 
-const CACHE_VERSION = "btechsmm-v21";
+const CACHE_VERSION = "btechsmm-v22";
 // Pages are listed by their clean URL (Render rewrites /login -> login.html). offline.html is kept as a
 // real file name on purpose: it is the fixed fallback served by the fetch handler below.
 const PRECACHE_URLS = [
@@ -62,6 +63,7 @@ const PRECACHE_URLS = [
   "css/components.css",
   "css/dashboard.css",
   "css/responsive.css",
+  "css/ambassador.css",
   "js/app.js",
   "js/main.js",
   "js/shell.js",
@@ -85,6 +87,7 @@ const PRECACHE_URLS = [
   "js/admin-dashboard.js",
   "js/ambassador.js",
   "js/ambassador-admin.js",
+  "js/ambassador-apply.js",
   "js/badge.js",
   "js/qr.js",
   "js/referral.js",

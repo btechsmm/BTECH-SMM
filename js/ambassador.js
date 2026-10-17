@@ -6,7 +6,7 @@
  *  - get_my_referrals()             referrals with identities masked (RPC)
  *  - ambassador_commissions         the caller's own earnings ledger (RLS)
  *  - ambassador_withdrawals         the caller's own withdrawals (RLS)
- *  - apply_for_ambassador()         submit an application (RPC)
+ *  - get_my_ambassador_application() / submit_ambassador_application()  the formal application (ambassador-apply.js)
  *  - request_ambassador_withdrawal  validated against the real balance (RPC)
  *  - verify_ambassador()            public, limited details (RPC)
  * The browser can't set a rate, an ID, a code, an earning or a balance.
@@ -17,7 +17,12 @@ import { AuthService } from "./auth.js";
 import { BUSINESS } from "./config.js";
 import { renderBadge, downloadPng, downloadPdf } from "./badge.js";
 import { createCropper, photoUrl, uploadPhoto, removePhoto } from "./photo.js";
-import { formatCurrency, formatNumber, formatDate, formatDateTime, escapeHtml, showToast, setButtonLoading } from "./utils.js";
+import { formatNumber, formatDate, formatDateTime, escapeHtml, showToast, setButtonLoading } from "./utils.js";
+import { applyEntryHtml, mountApplicationForm, applicationStatusHtml, wireReplyForm } from "./ambassador-apply.js";
+
+/** Money on this page is always shown in KES, e.g. "KES 1,250.00" (the shared helper prints "Ksh"). Display only. */
+const formatCurrency = (amount) =>
+  new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", currencyDisplay: "code", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(amount) || 0);
 
 const referralLink = (code) => `${BUSINESS.website}/?ref=${encodeURIComponent(code)}`;
 const verifyLink = (id) => `${BUSINESS.website}/verify-ambassador?id=${encodeURIComponent(id)}`;
@@ -52,24 +57,6 @@ function initials(name) {
 }
 
 /* --------------------------------- states -------------------------------- */
-function applyFormHtml(d, defaultName) {
-  const resubmit = d?.status === "rejected";
-  return `
-    <div class="panel"><div class="panel__head"><h3>${resubmit ? "Apply again" : "Apply to become an ambassador"}</h3></div>
-    <div class="panel__body panel__body--padded">
-      <form data-amb-apply novalidate>
-        <p class="form-error" data-form-error role="alert"></p>
-        <div class="form-field"><label for="amb-name">Display name</label>
-          <input id="amb-name" name="display_name" type="text" maxlength="40" required value="${escapeHtml(defaultName)}" />
-          <span class="form-hint">Shown on your badge and verification page.</span></div>
-        <div class="form-field"><label for="amb-why">How will you promote BTECH SMM?</label>
-          <textarea id="amb-why" name="motivation" rows="4" maxlength="1000" placeholder="Tell us about your audience or community."></textarea></div>
-        <div class="form-field"><label>Profile photo</label><div data-photo-cropper></div></div>
-        <label class="checkbox-row" style="margin-bottom:var(--sp-5)"><input type="checkbox" name="consent" /> I agree that my photo, name and Ambassador ID may appear on my BTECH SMM badge and its public verification page.</label>
-        <button type="submit" class="btn btn--primary btn--block">Submit application</button>
-      </form></div></div>`;
-}
-
 function pitchHtml() {
   return `
     <div class="panel" style="margin-bottom:var(--sp-6)"><div class="panel__head"><h3>How the Ambassador Program works</h3></div>
@@ -94,24 +81,75 @@ function kpi(label, value, sub = "") {
   return `<div class="stat-card"><p class="stat-card__label">${label}</p><p class="stat-card__value">${value}</p>${sub ? `<p class="adash-kpi__sub">${sub}</p>` : ""}</div>`;
 }
 
-function dashboardHtml(d) {
-  const b = d.balances;
-  const link = referralLink(d.referral_code);
+/* ------------------------- rewards card + balances ------------------------ */
+const TXN_BADGE = { Pending: "pending", Released: "completed", Reversed: "cancelled", Reversal: "cancelled", Adjustment: "processing", "Pending review": "pending", "Approved, awaiting payout": "processing", Paid: "completed", Rejected: "cancelled" };
+
+/** BTECH SMM Ambassador Rewards Card. Identity only: every figure below the card comes from the database. */
+function rewardsCardHtml(d) {
+  const url = d.photo_path ? photoUrl(d.photo_path) : null;
   return `
-    <div class="amb-hero">
-      <div class="amb-hero__id">
-        ${d.photo_path ? `<img class="amb-avatar amb-avatar--img" src="${escapeHtml(photoUrl(d.photo_path))}" alt="" />` : `<span class="amb-avatar" aria-hidden="true">${escapeHtml(initials(d.display_name))}</span>`}
-        <div>
-          <h2 class="amb-hero__name">${escapeHtml(d.display_name)}</h2>
-          <span class="badge badge--status badge--${STATUS_BADGE[d.status]}">${STATUS_LABEL[d.status]}</span>
+    <article class="rw-card" aria-label="BTECH SMM Ambassador Rewards Card">
+      <svg class="rw-card__arcs" viewBox="0 0 400 250" aria-hidden="true" focusable="false"><g fill="none" stroke="#fff" stroke-opacity=".07"><circle cx="360" cy="-10" r="120"/><circle cx="360" cy="-10" r="170"/><circle cx="360" cy="-10" r="220"/></g></svg>
+      <div class="rw-card__row">
+        <img class="rw-card__logo" src="assets/brand/btech-smm-logo.png" alt="BTECH SMM" width="140" height="29" />
+        <span class="rw-card__tag">Ambassador Rewards Card</span>
+      </div>
+      <div class="rw-card__person">
+        ${url ? `<img class="rw-card__photo" src="${escapeHtml(url)}" alt="" data-rw-photo data-initials="${escapeHtml(initials(d.display_name))}" />` : `<span class="rw-card__photo rw-card__photo--initials" aria-hidden="true">${escapeHtml(initials(d.display_name))}</span>`}
+        <div class="rw-card__who">
+          <p class="rw-card__name">${escapeHtml(d.display_name)}</p>
+          <span class="rw-card__status rw-card__status--${escapeHtml(d.status)}">${escapeHtml(STATUS_LABEL[d.status] || d.status)}</span>
         </div>
       </div>
-      <dl class="amb-hero__meta">
-        <div><dt>Ambassador ID</dt><dd>${escapeHtml(d.ambassador_code)}</dd></div>
-        <div><dt>Referral code</dt><dd>${escapeHtml(d.referral_code)}</dd></div>
-        <div><dt>Commission rate</dt><dd>${Number(d.commission_rate)}%</dd></div>
+      <dl class="rw-card__meta">
+        <div><dt>Ambassador ID</dt><dd>${escapeHtml(d.ambassador_code || "—")}</dd></div>
+        <div><dt>Referral code</dt><dd>${escapeHtml(d.referral_code || "—")}</dd></div>
       </dl>
-    </div>
+      <p class="rw-card__fine">BTECH SMM rewards card. Not a bank or payment card.</p>
+    </article>`;
+}
+
+/**
+ * The four figures, exactly as get_my_ambassador() / ambassador_balances() compute them:
+ *   Total Commission Earned = generated   Pending = earns still inside the hold period
+ *   Available to Withdraw   = available   Total Withdrawn = withdrawals actually marked paid
+ * "Available" already excludes anything in a pending/approved withdrawal.
+ */
+function balancesHtml(d) {
+  const b = d.balances;
+  const avail = Math.max(Number(b.available) || 0, 0);
+  const min = Number(d.min_withdrawal) || 0;
+  const inReview = Number(b.in_review) || 0;
+  let reason = "";
+  if (inReview > 0) reason = `You have a withdrawal in progress (${formatCurrency(inReview)}). You can request another once it is paid or rejected.`;
+  else if (avail < min) reason = `The minimum withdrawal is ${formatCurrency(min)}.`;
+  const adj = Number(b.adjustments) || 0;
+  const earnedNotes = [Number(b.reversed) > 0 ? `${formatCurrency(b.reversed)} reversed` : "", adj !== 0 ? `${adj > 0 ? "+" : ""}${formatCurrency(adj)} adjustments` : ""].filter(Boolean).join(" · ");
+  return `
+    <div class="rw-balances">
+      <section class="rw-primary" aria-labelledby="rw-avail-label">
+        <div>
+          <p class="rw-primary__label" id="rw-avail-label">Available to Withdraw</p>
+          <p class="rw-primary__value" aria-live="polite">${formatCurrency(avail)}</p>
+          <p class="rw-primary__sub" id="rw-avail-note">${reason ? escapeHtml(reason) : "Ready to withdraw to M-Pesa after review."}</p>
+        </div>
+        <button type="button" class="btn btn--primary rw-primary__cta" data-rw-withdraw ${reason ? "disabled" : ""} aria-describedby="rw-avail-note">Request Withdrawal</button>
+      </section>
+      <div class="rw-secondary">
+        <div class="rw-stat"><p class="rw-stat__label">Total Commission Earned</p><p class="rw-stat__value">${formatCurrency(b.generated)}</p>${earnedNotes ? `<p class="rw-stat__sub">${escapeHtml(earnedNotes)}</p>` : ""}</div>
+        <div class="rw-stat"><p class="rw-stat__label">Pending Commission</p><p class="rw-stat__value">${formatCurrency(b.pending)}</p><p class="rw-stat__sub">Released ${formatNumber(d.hold_days)} days after an order qualifies</p></div>
+        <div class="rw-stat"><p class="rw-stat__label">Total Withdrawn</p><p class="rw-stat__value">${formatCurrency(b.withdrawn)}</p><p class="rw-stat__sub">Paid out to your M-Pesa</p></div>
+      </div>
+    </div>`;
+}
+
+function dashboardHtml(d) {
+  const link = referralLink(d.referral_code);
+  return `
+    <section class="rw" aria-label="Rewards">
+      ${rewardsCardHtml(d)}
+      ${balancesHtml(d)}
+    </section>
 
     <div class="panel" style="margin-bottom:var(--sp-6)"><div class="panel__body panel__body--padded">
       <label class="stat-card__label" for="amb-link">Your referral link</label>
@@ -123,7 +161,7 @@ function dashboardHtml(d) {
           <a class="btn btn--secondary" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">Open Link</a>
         </div>
       </div>
-      <p class="form-hint" style="margin:var(--sp-3) 0 0">Share it, customers sign up, and you earn on their qualifying orders.</p>
+      <p class="form-hint" style="margin:var(--sp-3) 0 0">Share it, customers sign up, and you earn on their qualifying orders. Your commission rate is ${Number(d.commission_rate)}%.</p>
     </div></div>
 
     <div class="stat-grid" style="margin-bottom:var(--sp-6)">
@@ -133,11 +171,10 @@ function dashboardHtml(d) {
       ${kpi("Referred sales", formatCurrency(d.referred_sales))}
       ${kpi("Conversion rate", `${Number(d.conversion_rate)}%`, "Referrals who ordered")}
     </div>
-    <div class="stat-grid" style="margin-bottom:var(--sp-6)">
-      ${kpi("Commission generated", formatCurrency(b.generated), b.reversed > 0 ? `${formatCurrency(b.reversed)} reversed` : "")}
-      ${kpi("Pending", formatCurrency(b.pending), `Released ${d.hold_days} days after an order qualifies`)}
-      ${kpi("Available", formatCurrency(b.available), b.in_review > 0 ? `${formatCurrency(b.in_review)} in review` : "Ready to withdraw")}
-      ${kpi("Withdrawn", formatCurrency(b.withdrawn))}
+
+    <div class="panel" style="margin-bottom:var(--sp-6)">
+      <div class="panel__head"><h3>Transaction history</h3></div>
+      <div class="panel__body panel__body--padded" data-rw-txns><div class="skeleton" style="height:120px"></div></div>
     </div>
     <p class="loyalty-note" style="margin-bottom:var(--sp-6)">Ambassador earnings are separate from your wallet balance and loyalty points.</p>
 
@@ -147,7 +184,49 @@ function dashboardHtml(d) {
       <button type="button" role="tab" aria-selected="false" data-amb-tab="withdrawals">Withdrawals</button>
       <button type="button" role="tab" aria-selected="false" data-amb-tab="badge">Badge</button>
     </div>
-    <div class="panel"><div class="panel__body panel__body--padded" data-amb-pane></div></div>`;
+    <div class="panel" data-amb-pane-panel><div class="panel__body panel__body--padded" data-amb-pane></div></div>`;
+}
+
+/** One merged list of the caller's own ledger rows and withdrawals. Statuses are the stored ones, never inferred. */
+async function loadTransactions(el) {
+  const [c, w] = await Promise.all([
+    supabase.from("ambassador_commissions").select("id,type,amount,status,order_id,rate_percent,note,created_at,available_at").order("created_at", { ascending: false }).limit(30),
+    supabase.from("ambassador_withdrawals").select("id,amount,phone,status,admin_note,payout_reference,requested_at,paid_at").order("requested_at", { ascending: false }).limit(30),
+  ]);
+  if (c.error || w.error) return void (el.innerHTML = `<p class="form-error">Couldn't load your transactions. Please try again.</p>`);
+
+  const short = (id, prefix) => `${prefix}-${String(id).slice(0, 8).toUpperCase()}`;
+  const comm = c.data.map((x) => {
+    const released = x.type === "earn" && x.status === "pending" && new Date(x.available_at) <= new Date();
+    const status = x.type === "reversal" ? "Reversal" : x.type === "adjustment" ? "Adjustment" : x.status === "reversed" ? "Reversed" : released ? "Released" : "Pending";
+    return {
+      at: x.created_at,
+      ref: x.order_id || short(x.id, "CM"),
+      desc: x.type === "earn" ? `Commission on order ${x.order_id} (${Number(x.rate_percent)}%)` : x.type === "reversal" ? "Commission reversed (order refunded or cancelled)" : x.note || "Adjustment",
+      amount: Number(x.amount),
+      status,
+      note: status === "Pending" ? `Until ${formatDate(x.available_at)}` : "",
+    };
+  });
+  const wd = w.data.map((x) => ({
+    at: x.requested_at,
+    ref: x.payout_reference || short(x.id, "WD"),
+    desc: `Withdrawal to M-Pesa ending ${String(x.phone).slice(-3)}`,
+    amount: -Number(x.amount),
+    status: { pending: "Pending review", approved: "Approved, awaiting payout", paid: "Paid", rejected: "Rejected" }[x.status] || x.status,
+    note: x.status === "rejected" && x.admin_note ? x.admin_note : x.status === "paid" && x.paid_at ? `Paid ${formatDate(x.paid_at)}` : "",
+  }));
+  const rows = [...comm, ...wd].sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 30);
+  el.innerHTML = table(
+    ["Date", "Reference", "Description", "Amount", "Status"],
+    rows.map((r) => `<tr>
+      <td data-label="Date">${formatDateTime(r.at)}</td>
+      <td data-label="Reference">${escapeHtml(r.ref)}</td>
+      <td data-label="Description">${escapeHtml(r.desc)}</td>
+      <td data-label="Amount" class="${r.amount < 0 ? "txn-row__amount--out" : "txn-row__amount--in"}">${r.amount > 0 ? "+" : "−"}${formatCurrency(Math.abs(r.amount))}</td>
+      <td data-label="Status"><span class="badge badge--status badge--${TXN_BADGE[r.status] || "pending"}">${escapeHtml(r.status)}</span>${r.note ? `<br /><span class="muted">${escapeHtml(r.note)}</span>` : ""}</td></tr>`),
+    "No transactions yet. Commission appears here when a customer you referred completes a qualifying order."
+  );
 }
 
 const table = (heads, rows, empty) =>
@@ -310,43 +389,45 @@ export async function initAmbassadorPage() {
     return;
   }
 
-  const defaultName = (AuthService.getCurrentUser()?.name || "").trim();
-  const wireApply = () => {
-    const form = root.querySelector("[data-amb-apply]");
-    if (!form) return;
-    const cropper = createCropper(form.querySelector("[data-photo-cropper]"));
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const err = form.querySelector("[data-form-error]");
-      err.textContent = "";
-      if (!cropper.hasImage()) return void (err.textContent = "Please add a profile photo.");
-      if (!form.consent.checked) return void (err.textContent = "Please confirm that your photo may appear on your badge.");
-      const btn = form.querySelector("[type=submit]");
-      setButtonLoading(btn, true, "Submitting…");
-      let path = null;
-      try {
-        path = await uploadPhoto(await cropper.getBlob());
-        const { error: apErr } = await supabase.rpc("apply_for_ambassador", { p_display_name: form.display_name.value, p_motivation: form.motivation.value, p_photo_path: path });
-        if (apErr) throw new Error(apErr.message || "Couldn't submit your application.");
-      } catch (ex) {
-        await removePhoto(path); // don't leave an unused upload behind
-        setButtonLoading(btn, false);
-        err.textContent = ex.message;
-        return;
-      }
-      setButtonLoading(btn, false);
-      showToast("Application submitted.", "success");
-      await refreshAvatar();
-      initAmbassadorPage();
+  /**
+   * No ambassador record yet (or a rejected one): the formal application lives in its own table
+   * (see ambassador-apply.js). Applying creates NO ambassador record and grants nothing.
+   */
+  const renderApplyState = async (lead = "") => {
+    const { data: app, error: appErr } = await supabase.rpc("get_my_ambassador_application");
+    if (appErr) {
+      root.innerHTML = lead + noticeHtml("Applications are temporarily unavailable", `We couldn't load the application form right now. Please try again shortly. ${contactLine()}`);
+      return;
+    }
+    const open = app?.exists && (app.status === "submitted" || app.status === "clarification_requested");
+    if (open) {
+      root.innerHTML = lead + applicationStatusHtml(app);
+      return void wireReplyForm(root, () => initAmbassadorPage());
+    }
+    const last = app?.exists && app.status === "declined" ? applicationStatusHtml(app) : "";
+    if (!d.program_enabled) {
+      root.innerHTML = lead + last + noticeHtml("Applications are closed", `The Ambassador Program isn't accepting applications right now. ${contactLine()}`);
+      return;
+    }
+    root.innerHTML = lead + pitchHtml() + last + applyEntryHtml(last ? "Apply again" : "Apply to Become an Ambassador") + `<div data-apply-mount></div>`;
+    const mount = root.querySelector("[data-apply-mount]");
+    const cta = root.querySelector(".apply-cta");
+    root.querySelector("[data-apply-open]").addEventListener("click", () => {
+      cta.hidden = true;
+      mountApplicationForm(mount, {
+        existingPhotoPath: d.photo_path || null,
+        onCancel: () => {
+          mount.innerHTML = "";
+          cta.hidden = false;
+        },
+      });
+      mount.scrollIntoView({ behavior: "smooth", block: "start" });
+      mount.querySelector("input,textarea")?.focus({ preventScroll: true });
     });
   };
 
-  if (!d.exists) {
-    root.innerHTML = d.program_enabled
-      ? pitchHtml() + applyFormHtml(null, defaultName)
-      : noticeHtml("Applications are closed", `The Ambassador Program isn't accepting applications right now. ${contactLine()}`);
-    return void wireApply();
-  }
+  if (!d.exists) return void (await renderApplyState());
+
   if (d.status === "applicant") {
     root.innerHTML =
       noticeHtml("Application under review", `Thanks, ${escapeHtml(d.display_name)}. We received your application on ${formatDate(d.applied_at)} and will notify you once it has been reviewed.`,
@@ -356,8 +437,7 @@ export async function initAmbassadorPage() {
     return;
   }
   if (d.status === "rejected") {
-    root.innerHTML = noticeHtml("Application not approved", `Your application wasn't approved this time. You're welcome to apply again. ${contactLine()}`) + (d.program_enabled ? applyFormHtml(d, d.display_name) : "");
-    return void wireApply();
+    return void (await renderApplyState(noticeHtml("Application not approved", `Your earlier application wasn't approved. You're welcome to apply again. ${contactLine()}`)));
   }
   if (d.status !== "approved") {
     root.innerHTML = noticeHtml(
@@ -405,6 +485,32 @@ export async function initAmbassadorPage() {
   };
   root.querySelectorAll("[data-amb-tab]").forEach((t) => t.addEventListener("click", () => show(t.dataset.ambTab)));
   show("referrals");
+
+  // Card photo: if the image can't load, fall back to initials rather than a broken icon.
+  root.querySelectorAll("[data-rw-photo]").forEach((img) =>
+    img.addEventListener("error", () => {
+      const span = document.createElement("span");
+      span.className = "rw-card__photo rw-card__photo--initials";
+      span.setAttribute("aria-hidden", "true");
+      span.textContent = img.dataset.initials || "";
+      img.replaceWith(span);
+    })
+  );
+
+  // "Request Withdrawal" opens the existing withdrawal form (validated and enforced by
+  // request_ambassador_withdrawal on the server). The button is disabled when the server-computed
+  // balance is below the minimum or a request is already open.
+  root.querySelector("[data-rw-withdraw]")?.addEventListener("click", async () => {
+    await show("withdrawals");
+    pane.closest("[data-amb-pane-panel]")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    pane.querySelector("input[name=amount]")?.focus({ preventScroll: true });
+  });
+
+  loadTransactions(root.querySelector("[data-rw-txns]")).catch((err) => {
+    console.error(err);
+    const el = root.querySelector("[data-rw-txns]");
+    if (el) el.innerHTML = `<p class="form-error">Couldn't load your transactions. Please try again.</p>`;
+  });
 }
 
 /* ------------------------- public verification page ---------------------- */
