@@ -17,9 +17,11 @@
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/responsive.css" />
+  <link rel="stylesheet" href="css/support-chat.css" />
 </head>
 
 <body data-page="support" data-nav="customer">
+  <script src="js/prepaint.js"></script>
   <a href="#main" class="skip-link">Skip to content</a>
   <header id="site-header"></header>
 
@@ -28,7 +30,7 @@
       <div class="page-head">
         <div>
           <h1>Support</h1>
-          <p class="muted">Find answers below, or send us a message.</p>
+          <p class="muted">Find answers below, use Chat with us, or send us a message.</p>
         </div>
       </div>
 
@@ -43,6 +45,20 @@
             <h3>Create a support request</h3>
             <form data-ticket-form novalidate>
               <p class="form-error" data-form-error role="alert"></p>
+              <div class="form-field">
+                <label for="ticket-category">Category</label>
+                <select id="ticket-category" name="category">
+                  <option value="general">General question</option>
+                  <option value="order">Order</option>
+                  <option value="payment">Payment or wallet</option>
+                  <option value="service">Service</option>
+                  <option value="account">Account</option>
+                  <option value="refund">Refund</option>
+                  <option value="cancellation">Cancellation</option>
+                  <option value="security">Security concern</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
               <div class="form-field">
                 <label for="ticket-subject">Subject</label>
                 <input id="ticket-subject" name="subject" type="text" required />

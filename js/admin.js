@@ -301,7 +301,7 @@ async function loadProviderMappings() {
         <td data-label="BTECH Service">${escapeHtml(m.services?.name || m.service_id)}</td>
         <td data-label="Delix Service ID">${escapeHtml(m.provider_service_ref)}</td>
         <td data-label="Provider Name">${escapeHtml(m.provider_name || "—")}</td>
-        <td data-label="Rate (USD)">${m.provider_rate != null ? "$" + Number(m.provider_rate).toFixed(2) : "—"}</td>
+        <td data-label="Delix rate (KES)">${m.provider_rate != null ? "KSh " + Number(m.provider_rate).toFixed(4).replace(/\.?0+$/, "") : "—"}</td>
         <td data-label="Refill / Cancel">${m.provider_refill ? "✓" : "✕"} / ${m.provider_cancel ? "✓" : "✕"}</td>
         <td data-label="Status">${syncBadge}</td>
         <td data-label="Last Synced">${fmtDateTimeOrDash(m.last_provider_sync)}</td>
@@ -425,7 +425,7 @@ async function loadProviderCatalogue() {
         <td data-label="Delix ID">${escapeHtml(r.provider_service_ref)}</td>
         <td data-label="Name"><span class="truncate">${escapeHtml(r.provider_name || "—")}</span></td>
         <td data-label="Category"><span class="truncate">${escapeHtml(r.provider_category || "—")}</span></td>
-        <td data-label="Rate (USD)">${r.provider_rate != null ? "$" + Number(r.provider_rate).toFixed(2) : "—"}</td>
+        <td data-label="Delix rate (KES)">${r.provider_rate != null ? "KSh " + Number(r.provider_rate).toFixed(4).replace(/\.?0+$/, "") : "—"}</td>
         <td data-label="Min–Max">${r.provider_min ?? "—"}–${r.provider_max ?? "—"}</td>
         <td data-label="Mapped">${mappedLabel} ${availLabel}</td>
         <td data-label="">${r.service_id
@@ -567,7 +567,7 @@ export async function initAdminPage() {
 
   const [{ data: orders }, { data: tickets }, { data: profiles, error: profilesError }] = await Promise.all([
     supabase.from("orders").select("*").order("created_at", { ascending: false }),
-    supabase.from("support_tickets").select("*").eq("status", "open"),
+    supabase.from("support_tickets").select("id").in("status", ["open", "in_progress", "awaiting_customer"]),
     supabase.from("profiles").select("*").order("created_at", { ascending: false }),
   ]);
 
@@ -635,6 +635,11 @@ export async function initAdminPage() {
   // Independent panels: one failing to load must not take the other down.
   await Promise.all([
     initLoyaltyAdmin().catch((err) => console.error("Loyalty admin failed to load:", err)),
+    import("./support-admin.js").then((m) => m.initSupportAdmin()).catch((err) => {
+      console.error("Support admin failed to load:", err);
+      const box = document.querySelector("[data-support-admin]");
+      if (box) box.innerHTML = `<div class="panel__body panel__body--padded"><p class="muted">Unable to load Customer Service &amp; Support right now. Please refresh and try again.</p></div>`;
+    }),
     initAmbassadorAdmin().catch((err) => {
       console.error("Ambassador admin failed to load:", err);
       const box = document.querySelector("[data-ambassador-admin]");

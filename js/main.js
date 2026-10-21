@@ -16,6 +16,7 @@ import { initNavigation } from "./navigation.js";
 import { renderFeatured, initServicesPage, ServicesService } from "./services.js";
 import { initOrderForm, initOrdersList, initOrderDetails } from "./orders.js";
 import { initWalletPage } from "./wallet.js";
+import { initPayPage } from "./pay.js";
 import { initLoyaltyPage } from "./loyalty.js";
 import { initDashboard } from "./dashboard.js";
 import { initProfilePage } from "./profile.js";
@@ -72,6 +73,9 @@ async function initPage() {
       break;
     case "wallet":
       await initWalletPage();
+      break;
+    case "pay":
+      await initPayPage();
       break;
     case "loyalty":
       await initLoyaltyPage();
@@ -144,6 +148,14 @@ async function boot() {
   initNavigation();
   claimPendingReferral().catch(() => { }); // server validates; never blocks the page
   await initPage();
+  mountSupportLauncher();
+}
+
+// Floating support chat on signed-in customer pages (the Support page embeds the chat itself).
+const LAUNCHER_PAGES = new Set(["dashboard", "services", "service-order", "orders", "order-details", "wallet", "pay", "loyalty", "ambassador", "profile", "support", "home"]);
+function mountSupportLauncher() {
+  if (!LAUNCHER_PAGES.has(document.body.dataset.page)) return;
+  import("./support-chat.js").then((m) => m.mountLauncher()).catch((err) => console.warn("Support chat unavailable:", err));
 }
 
 // main.js is imported dynamically (after shell.js has painted the sidebar), so DOMContentLoaded

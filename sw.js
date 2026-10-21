@@ -23,6 +23,8 @@
  * even though they took effect immediately server-side. Supabase
  * requests must always hit the network live.
  *
+ * v26: BTECH CUSTOMER SUPPORT — AI chat widget, ticket threads, admin Customer Service & Support (support-chat.*, support-admin.js, support.js, main.js).
+ * v23: White top bar in both themes, larger logos, sidebar drawn in the first frame (prepaint.js, shell.js, sidebar.js, components.css, customer pages).
  * v22: Ambassador application form, admin Applications panel and the Ambassador Rewards Card (ambassador-apply.js, ambassador.css, ambassador.js, ambassador-admin.js).
  * v21: Continue with Google (auth.js, auth-forms.js, shell.js, supabase.js, login/register pages, CSS).
  * v20: Ambassador Management panel wired up in admin.js.
@@ -40,7 +42,7 @@
  * handler.
  */
 
-const CACHE_VERSION = "btechsmm-v22";
+const CACHE_VERSION = "btechsmm-v31";
 // Pages are listed by their clean URL (Render rewrites /login -> login.html). offline.html is kept as a
 // real file name on purpose: it is the fixed fallback served by the fetch handler below.
 const PRECACHE_URLS = [
@@ -51,6 +53,7 @@ const PRECACHE_URLS = [
   "dashboard",
   "orders",
   "wallet",
+  "pay",
   "profile",
   "support",
   "loyalty",
@@ -64,6 +67,8 @@ const PRECACHE_URLS = [
   "css/dashboard.css",
   "css/responsive.css",
   "css/ambassador.css",
+  "css/finance.css",
+  "css/support-chat.css",
   "js/app.js",
   "js/main.js",
   "js/shell.js",
@@ -88,19 +93,26 @@ const PRECACHE_URLS = [
   "js/ambassador.js",
   "js/ambassador-admin.js",
   "js/ambassador-apply.js",
+  "js/prepaint.js",
   "js/badge.js",
   "js/qr.js",
   "js/referral.js",
   "js/photo.js",
   "js/avatar.js",
   "js/insights.js",
+  "js/finance.js",
+  "js/support-chat.js",
+  "js/support-admin.js",
   "js/mpesa-card.js",
+  "js/pay.js",
+  "css/pay.css",
   "js/order-progress.js",
   "js/supabase.js",
   "js/config.js",
   "data/demo-data.js",
   "assets/brand/btech-smm-logo.png",
   "assets/brand/icon-192.png",
+  "assets/brand/chat-launcher.png",
   "assets/brand/icon-512.png",
 ];
 

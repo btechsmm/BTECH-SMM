@@ -10,11 +10,13 @@
  *   success     "Payment Received Successfully" — amount, receipt, wallet balance
  *   failed      "Payment Failed" — Try Again
  *   cancelled   "Payment Cancelled" — Try Again
- *   unconfirmed "We couldn't confirm your M-Pesa payment."
+ *   crediting   payment confirmed, wallet update completing (server-reported `credited` flag)
+ *   reconcile   payment confirmed but the wallet update is not complete yet — never shown as success
+ *   unconfirmed "Waiting for Payment Confirmation" (no verified final status; never treated as failed)
  *
- * It reuses the existing payment flow unchanged: the mpesa-daraja Edge
+ * Payments are provided by TUMA (Daraja is postponed, not removed): the tuma-payments Edge
  * Function's `initiate-payment` action starts the STK push, and the card then
- * polls `check-status` (pollPaymentStatus in utils.js). The card NEVER decides
+ * polls its `check-status` (pollPaymentStatus in utils.js). The card NEVER decides
  * that a payment succeeded — "Payment Received" is only shown once the
  * backend reports payments.status = 'paid' (set by Safaricom's callback), and
  * the wallet balance shown afterwards is re-read from the database once the
@@ -27,7 +29,24 @@ import { formatCurrency, escapeHtml, showToast, pollPaymentStatus } from "./util
 import { fetchWalletBalance } from "./wallet-pay.js";
 
 const LOGO_SRC = "assets/brand/btech-mpesa-logo.svg";
-const MIN_AMOUNT = 10;
+const FN = "tuma-payments";
+const refOf = (id) => (id ? "BTS-" + String(id).slice(0, 8).toUpperCase() : "");
+const fmtWhen = (iso) => { try { return new Date(iso).toLocaleString("en-KE", { dateStyle: "medium", timeStyle: "short" }); } catch { return ""; } };
+let minDeposit = 10; // server-enforced; this copy only drives the form hint (loaded from the tuma-payments `config` action)
+let configLoaded = false;
+async function loadConfig() {
+  if (configLoaded) return;
+  try {
+    const { data } = await supabase.functions.invoke(FN, { body: { action: "config" } });
+    if (data?.ok && Number.isFinite(Number(data.min_deposit))) { minDeposit = Math.max(1, Math.floor(Number(data.min_deposit))); configLoaded = true; }
+  } catch { /* keep the default; the server still enforces the real limit */ }
+}
+async function checkOnce(paymentId) {
+  try {
+    const { data, error } = await supabase.functions.invoke(FN, { body: { action: "check-status", payment_id: paymentId } });
+    return !error && data?.ok ? data.payment : null;
+  } catch { return null; }
+}
 
 const ICONS = {
   check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`,
@@ -43,7 +62,8 @@ const s = {
   runId: 0,
   paymentId: null,
   requestedAmount: null,
-  paid: null, // { amount, receipt }
+  paid: null, // { amount, receipt, completedAt }
+  reference: "",
   balance: undefined, // undefined = still updating, null = couldn't load
   failureReason: "",
   terminal: false, // unconfirmed because the backend said 'expired' (safe to retry) vs. our own timeout
@@ -104,7 +124,7 @@ function isOpen() {
 
 function formHtml() {
   const opts = s.options;
-  const min = Math.max(MIN_AMOUNT, Math.ceil(Number(opts.minAmount) || 0));
+  const min = Math.max(minDeposit, Math.ceil(Number(opts.minAmount) || 0));
   const amountValue = opts.amount ? Math.max(min, Math.ceil(Number(opts.amount))) : "";
   const phone = escapeHtml(AuthService.getCurrentUser()?.phone || "");
   const lead = opts.shortage
@@ -153,22 +173,50 @@ function render() {
         <span class="mpesa-card__spinner" aria-hidden="true"></span>
         <span>Waiting for confirmation…</span>
       </div>
-      <p class="form-hint">Amount requested: ${formatCurrency(s.requestedAmount)}. This can take up to a minute. You can close this window — your wallet updates automatically once M-Pesa confirms.</p>`;
+      <p class="form-hint">Amount requested: ${formatCurrency(s.requestedAmount)}${s.reference ? ` · Reference ${escapeHtml(s.reference)}` : ""}. This can take up to a minute. Closing this window does not cancel the payment; your wallet updates only after the payment is confirmed on our servers.</p>`;
+    return;
+  }
+
+  if (s.phase === "crediting") {
+    bodyEl.innerHTML = `
+      <span class="badge badge--status badge--processing">Payment Confirmed</span>
+      <div class="mpesa-card__status" role="status"><span class="mpesa-card__spinner" aria-hidden="true"></span><span>Updating your wallet…</span></div>
+      <p class="form-hint">Reference ${escapeHtml(s.reference)}. This only takes a moment.</p>`;
+    return;
+  }
+
+  if (s.phase === "reconcile") {
+    bodyEl.innerHTML = `
+      <div class="mpesa-card__result">
+        <span class="mpesa-card__icon mpesa-card__icon--warn">${ICONS.clock}</span>
+        <h3>Payment Received — Finishing Up</h3>
+        <p>Your payment was confirmed, but your wallet update has not finished yet. You do not need to pay again. It will be completed automatically; if your balance has not changed shortly, contact support and quote reference <strong>${escapeHtml(s.reference)}</strong>.</p>
+      </div>
+      <div class="mpesa-card__actions">
+        <button type="button" class="btn btn--primary btn--block" data-mc-recheck>Check Again</button>
+        <button type="button" class="btn btn--secondary btn--block" data-mc-close>Close</button>
+      </div>`;
     return;
   }
 
   if (s.phase === "success") {
     const rows = [["Amount", formatCurrency(s.paid.amount)]];
     if (s.paid.receipt) rows.push(["M-Pesa Receipt", escapeHtml(s.paid.receipt)]);
+    if (s.reference) rows.push(["Reference", escapeHtml(s.reference)]);
+    if (s.paid.completedAt) rows.push(["Date & time", escapeHtml(fmtWhen(s.paid.completedAt))]);
+    rows.push(["Purpose", "Wallet deposit"]);
     rows.push(["Wallet Balance", s.balance === undefined ? "Updating…" : s.balance === null ? "—" : formatCurrency(s.balance)]);
     bodyEl.innerHTML = `
       <div class="mpesa-card__result">
         <span class="mpesa-card__icon mpesa-card__icon--success">${ICONS.check}</span>
         <h3>Payment Received Successfully</h3>
-        <p>Your M-Pesa payment has been confirmed.</p>
+        <p>Your payment has been confirmed and your wallet has been credited.</p>
       </div>
       <div class="wallet-panel">${summaryRows(rows)}</div>
-      <button type="button" class="btn btn--primary btn--block" data-mc-close>${escapeHtml(s.options.doneLabel || "Done")}</button>`;
+      <div class="mpesa-card__actions">
+        <a class="btn btn--primary btn--block" href="wallet" data-mc-close>View Wallet</a>
+        <button type="button" class="btn btn--secondary btn--block" data-mc-close>${escapeHtml(s.options.doneLabel || "Done")}</button>
+      </div>`;
     return;
   }
 
@@ -177,7 +225,7 @@ function render() {
       <div class="mpesa-card__result">
         <span class="mpesa-card__icon mpesa-card__icon--error">${ICONS.cross}</span>
         <h3>Payment Failed</h3>
-        <p>M-Pesa could not complete this payment.${s.failureReason ? ` (${escapeHtml(s.failureReason)})` : ""} No money was added to your wallet.</p>
+        <p>M-Pesa could not complete this payment.${s.failureReason ? ` (${escapeHtml(s.failureReason)})` : ""} No money was added to your wallet.${s.reference ? ` Reference ${escapeHtml(s.reference)}.` : ""}</p>
       </div>
       <div class="mpesa-card__actions">
         <button type="button" class="btn btn--primary btn--block" data-mc-retry>Try Again</button>
@@ -191,7 +239,7 @@ function render() {
       <div class="mpesa-card__result">
         <span class="mpesa-card__icon mpesa-card__icon--warn">${ICONS.cross}</span>
         <h3>Payment Cancelled</h3>
-        <p>The payment request was cancelled on your phone. No money was added to your wallet.</p>
+        <p>The payment request was cancelled on your phone. No money was added to your wallet.${s.reference ? ` Reference ${escapeHtml(s.reference)}.` : ""}</p>
       </div>
       <div class="mpesa-card__actions">
         <button type="button" class="btn btn--primary btn--block" data-mc-retry>Try Again</button>
@@ -204,8 +252,8 @@ function render() {
   bodyEl.innerHTML = `
     <div class="mpesa-card__result">
       <span class="mpesa-card__icon mpesa-card__icon--warn">${ICONS.clock}</span>
-      <h3>We couldn't confirm your M-Pesa payment.</h3>
-      <p>We haven't received a confirmation from M-Pesa yet. If you did complete the payment, your wallet will be updated automatically once it's confirmed.</p>
+      <h3>Waiting for Payment Confirmation</h3>
+      <p>The result of this payment has not been confirmed yet. This is not a failure. If you completed the payment, your wallet will be updated once it is confirmed; please do not pay again. ${s.reference ? `Reference <strong>${escapeHtml(s.reference)}</strong>.` : ""}</p>
     </div>
     <div class="mpesa-card__actions">
       ${s.terminal
@@ -228,6 +276,7 @@ function resetToForm() {
 /** Opens the card. If a payment is still being confirmed, reopens on that state instead of starting a second one. */
 export function openMpesaTopUp(options = {}) {
   ensureOverlay();
+  loadConfig().then(() => { if (s.phase === "form" && isOpen()) render(); });
   lastFocus = document.activeElement;
   if (s.phase !== "waiting") {
     s.options = options;
@@ -247,7 +296,7 @@ async function submitForm(form) {
 
   const phone = form.querySelector("[name=phone]").value.trim();
   const amount = Number(form.querySelector("[name=amount]").value);
-  const min = Math.max(MIN_AMOUNT, Math.ceil(Number(s.options.minAmount) || 0));
+  const min = Math.max(minDeposit, Math.ceil(Number(s.options.minAmount) || 0));
 
   if (!phone) {
     errorBox.textContent = "Please enter your M-Pesa phone number.";
@@ -261,7 +310,7 @@ async function submitForm(form) {
   submitBtn.disabled = true;
   submitBtn.textContent = "Sending request…";
 
-  const { data, error } = await supabase.functions.invoke("mpesa-daraja", {
+  const { data, error } = await supabase.functions.invoke("tuma-payments", {
     body: { action: "initiate-payment", payment_type: "wallet_deposit", amount, phone },
   });
 
@@ -276,6 +325,8 @@ async function submitForm(form) {
   // is credited and nothing is marked paid until the backend says so.
   const runId = ++s.runId;
   s.paymentId = data.payment_id;
+  s.reference = refOf(data.payment_id);
+  s.paid = null;
   s.requestedAmount = Math.round(amount);
   setPhase("waiting");
   track(runId, s.options, await pollPaymentStatus(supabase, data.payment_id));
@@ -288,40 +339,38 @@ async function recheck() {
   track(runId, opts, await pollPaymentStatus(supabase, s.paymentId, { timeoutMs: 45000 }));
 }
 
-/** Waits for the wallet-credit transaction linked to this payment, then reads the balance. */
-async function waitForWalletCredit(paymentId) {
-  for (let i = 0; i < 15; i++) {
-    const { data } = await supabase.from("transactions").select("id").eq("payment_id", paymentId).maybeSingle();
-    if (data) return { credited: true, balance: await fetchWalletBalance() };
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-  return { credited: false, balance: await fetchWalletBalance() };
-}
-
 async function track(runId, opts, result) {
   if (runId !== s.runId) return; // a newer attempt owns the card now
 
   if (result.status === "paid") {
     const paymentId = s.paymentId;
-    const paid = { amount: Number(result.amount) || s.requestedAmount, receipt: result.mpesa_receipt_number || "" };
-    s.paid = paid;
+    s.paid = { amount: Number(result.amount) || s.requestedAmount, receipt: result.mpesa_receipt_number || "", completedAt: result.completed_at || "" };
+    // "paid" alone is not shown as success: the server must also report the wallet credit as complete (`credited`).
+    let state = result;
+    if (!state.credited) {
+      setPhase("crediting");
+      for (let i = 0; i < 10 && runId === s.runId; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        const fresh = await checkOnce(paymentId);
+        if (fresh?.credited) { state = fresh; break; }
+      }
+      if (runId !== s.runId) return;
+      if (!state.credited) { setPhase("reconcile"); return; }
+    }
+    s.paid = { amount: Number(state.amount) || s.requestedAmount, receipt: state.mpesa_receipt_number || "", completedAt: state.completed_at || "" };
     s.balance = undefined;
     setPhase("success");
-    if (!isOpen()) showToast("M-Pesa payment received.", "success", 4000);
-
-    // The payment row flips to 'paid' a moment before the wallet-credit RPC
-    // runs in the same callback, so wait for the credit before reading the
-    // balance instead of showing a stale number.
-    const { balance } = await waitForWalletCredit(paymentId);
+    if (!isOpen()) showToast("Payment received. Your wallet has been credited.", "success", 4000);
+    const balance = await fetchWalletBalance();
     if (runId === s.runId) {
       s.balance = balance;
       if (s.phase === "success") render();
     }
     window.dispatchEvent(new CustomEvent("btech:wallet-updated"));
     try {
-      await opts.onPaid?.({ amount: paid.amount, receipt: paid.receipt, balance, paymentId });
+      await opts.onPaid?.({ amount: s.paid.amount, receipt: s.paid.receipt, balance, paymentId });
     } catch (err) {
-      console.error("mpesa card onPaid callback failed:", err);
+      console.error("payment card onPaid callback failed:", err);
     }
     return;
   }
@@ -337,5 +386,26 @@ async function track(runId, opts, result) {
     s.terminal = result.status === "expired";
     setPhase("unconfirmed");
   }
-  if (!isOpen()) showToast("The M-Pesa payment was not completed.", "info", 4000);
+  if (!isOpen()) showToast("The payment was not completed.", "info", 4000);
+}
+
+/**
+ * Re-attach the card to an existing payment (used by /pay when a customer returns later or refreshes).
+ * Never starts a new payment: it only reads the server's record for this payment id (own payments only).
+ */
+export async function resumePayment(paymentId, options = {}) {
+  ensureOverlay();
+  lastFocus = document.activeElement;
+  const runId = ++s.runId;
+  s.options = options;
+  s.paymentId = paymentId;
+  s.reference = refOf(paymentId);
+  s.paid = null;
+  setPhase("waiting");
+  overlay.hidden = false;
+  const first = await checkOnce(paymentId);
+  if (runId !== s.runId) return;
+  if (first) s.requestedAmount = Math.round(Number(first.amount));
+  if (first && ["paid", "failed", "cancelled", "expired"].includes(first.status)) return track(runId, options, first);
+  track(runId, options, await pollPaymentStatus(supabase, paymentId, { timeoutMs: 45000 }));
 }

@@ -1,0 +1,69 @@
+/* BTECH SMM — /pay page. Layout only; every colour, radius and spacing token comes from the existing stylesheets. */
+.pay-how {
+    margin-bottom: var(--sp-5);
+}
+
+.pay-steps {
+    margin: 0;
+    padding: var(--sp-4) var(--sp-5) var(--sp-4) var(--sp-8);
+    display: grid;
+    gap: var(--sp-3);
+}
+
+.pay-grid {
+    display: grid;
+    gap: var(--sp-5);
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 860px) {
+    .pay-grid {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+    }
+}
+
+.pay-order-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--sp-2);
+}
+
+.pay-order-list li,
+.pay-recent li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-2) var(--sp-3);
+    padding: var(--sp-2) 0;
+    border-bottom: 1px solid var(--border, rgba(0, 0, 0, .08));
+}
+
+.pay-order-list li:last-child,
+.pay-recent li:last-child {
+    border-bottom: 0;
+}
+
+.pay-recent {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.pay-recent small {
+    display: block;
+    color: var(--text-muted, #6b7785);
+}
+
+.pay-help {
+    margin-top: var(--sp-5);
+    font-size: .9rem;
+}
+
+.pay-links {
+    display: block;
+    margin-top: var(--sp-2);
+}

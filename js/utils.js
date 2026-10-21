@@ -185,16 +185,17 @@ export function initScrollReveal(selector = "[data-reveal]") {
 }
 
 /**
- * Polls the mpesa-daraja check-status action until the payment reaches a
+ * Polls the tuma-payments check-status action until the payment reaches a
  * terminal state (paid/failed/cancelled) or the timeout elapses. Read-only
  * on every poll — cannot itself cause a duplicate credit or double-submit
  * anything, since it never writes.
  */
 export async function pollPaymentStatus(supabase, paymentId, { intervalMs = 3000, timeoutMs = 90000 } = {}) {
   const deadline = Date.now() + timeoutMs;
+  let wait = intervalMs; // gentle back-off (3s -> 8s) so a slow confirmation is not polled rapidly
   while (Date.now() < deadline) {
     try {
-      const { data, error } = await supabase.functions.invoke("mpesa-daraja", { body: { action: "check-status", payment_id: paymentId } });
+      const { data, error } = await supabase.functions.invoke("tuma-payments", { body: { action: "check-status", payment_id: paymentId } });
       if (!error && data?.ok) {
         const status = data.payment.status;
         if (["paid", "failed", "cancelled", "expired"].includes(status)) return data.payment;
@@ -202,7 +203,8 @@ export async function pollPaymentStatus(supabase, paymentId, { intervalMs = 3000
     } catch {
       /* transient network hiccup — keep polling until the timeout */
     }
-    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    await new Promise((resolve) => setTimeout(resolve, wait));
+    wait = Math.min(8000, Math.round(wait * 1.2));
   }
   // Client-side give-up only — the real payment may still resolve later via
   // the callback; this just stops the UI from polling forever.

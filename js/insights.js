@@ -14,6 +14,7 @@
 import { supabase } from "./supabase.js";
 import { AuthService } from "./auth.js";
 import { chart, donut, hbars } from "./admin-dashboard.js";
+import { renderFinanceCentre } from "./finance.js";
 import { formatCurrency, formatNumber, formatDate, escapeHtml, showToast } from "./utils.js";
 
 const DAY = 86400000;
@@ -25,7 +26,7 @@ const RANGES = [
 ];
 const TABS = [
   ["overview", "Overview"], ["orders", "Orders"], ["services", "Services"], ["customers", "Customers"],
-  ["loyalty", "Rewards & Loyalty"], ["ambassadors", "Ambassadors"], ["finance", "Finance"], ["provider", "Provider"],
+  ["loyalty", "Rewards & Loyalty"], ["ambassadors", "Ambassadors"], ["finance", "Finance & Accounts"], ["provider", "Provider"],
 ];
 
 const st = { range: "30d", from: "", to: "", tab: "overview", cache: new Map(), svcSort: "orders" };
@@ -321,7 +322,7 @@ const SORTS = {
   failed: ["Most failed / cancelled", (a, b) => num(b.cancelled) + num(b.provider_failed) - (num(a.cancelled) + num(a.provider_failed))],
 };
 const growth = (r) => (num(r.prev_orders) >= 3 ? (num(r.orders) - num(r.prev_orders)) / num(r.prev_orders) : -Infinity);
-const estProfit = (r) => (r.est_cost_kes == null ? -Infinity : num(r.revenue) - num(r.est_cost_kes));
+const estProfit = (r) => (r.est_profit_kes == null ? -Infinity : num(r.est_profit_kes));
 
 async function renderServices(el, w) {
   const d = await load("services", w);
@@ -337,10 +338,10 @@ async function renderServices(el, w) {
           <td data-label="Category">${escapeHtml(r.category)}</td>
           <td data-label="Provider">${escapeHtml(r.provider_name || "—")}</td>
           <td data-label="Price / 1,000">${formatCurrency(r.price_per_1000)}</td>
-          <td data-label="Provider rate">${r.provider_rate == null ? "—" : `${Number(r.provider_rate)} ${escapeHtml(r.provider_currency || "")}`}</td>
+          <td data-label="Provider rate">${r.provider_rate == null ? "—" : r.rate_currency ? `${r.rate_currency === "KES" ? "KSh" : escapeHtml(r.rate_currency)} ${Number(r.provider_rate)} <span class="muted">per ${formatNumber(r.rate_per_quantity || 1000)}</span>${r.rate_currency === "KES" && r.provider_currency && r.provider_currency !== "KES" ? `<br /><span class="muted">Delix labels it ${escapeHtml(r.provider_currency)}; treated as KES</span>` : ""}${r.rate_above_price ? `<br /><span class="fin-tag fin-tag--amber">Above BTECH price</span>` : ""}` : `${Number(r.provider_rate)} <span class="fin-tag fin-tag--grey">currency not defined</span>`}</td>
           <td data-label="Orders">${formatNumber(r.orders)}</td>
           <td data-label="Revenue">${formatCurrency(r.revenue)}</td>
-          <td data-label="Est. profit">${r.est_cost_kes == null ? "—" : `${formatCurrency(num(r.revenue) - num(r.est_cost_kes))} <span class="muted">(estimated)</span>`}</td>
+          <td data-label="Est. profit">${r.est_profit_kes == null ? `—${num(r.uncosted_paid) ? ` <span class="muted">(${formatNumber(r.uncosted_paid)} paid, no cost yet)</span>` : ""}` : `${formatCurrency(r.est_profit_kes)} <span class="muted">(estimated${num(r.uncosted_paid) ? `, ${formatNumber(r.uncosted_paid)} order${num(r.uncosted_paid) === 1 ? "" : "s"} without cost` : ""})</span>`}</td>
           <td data-label="Completion">${num(r.orders) ? `${Math.round((num(r.completed) / num(r.orders)) * 100)}%` : "—"}</td>
           <td data-label="Refunded">${formatNumber(r.refunded)}</td>
           <td data-label="Failed">${formatNumber(num(r.cancelled) + num(r.provider_failed))}</td>
@@ -351,13 +352,13 @@ async function renderServices(el, w) {
     );
   };
   el.innerHTML = `
-    ${d.fx_set ? "" : `<p class="form-hint">Provider rates are stored in USD. Set the USD→KES rate in the Finance tab to see estimated profit per service.</p>`}
+    <p class="form-hint">Delix rates are interpreted as KES for BTECH accounting (the “USD” label Delix shows is not converted). Estimated profit uses each order's recorded provider cost.</p>
     <div class="filters-bar" style="margin:var(--sp-3) 0">
       <label class="stat-card__label" for="ins-sort" style="margin:0 var(--sp-3) 0 0">Sort by</label>
       <select id="ins-sort" data-ins-sort>${Object.entries(SORTS).map(([k, [l]]) => `<option value="${k}" ${k === st.svcSort ? "selected" : ""}>${l}</option>`).join("")}</select>
     </div>
     <div data-ins-svc></div>
-    <p class="adash-foot">Showing measurable metrics only. Estimated profit = paid revenue − (provider rate × quantity × exchange rate) for per-quantity services with a known USD rate. It is an estimate, not audited accounting profit.</p>`;
+    <p class="adash-foot">Showing measurable metrics only. Estimated profit = paid revenue − the provider cost recorded on each order (Delix rate in KES × quantity ÷ 1000), for orders whose cost is known. No exchange rate is applied. It is an estimate, not audited accounting profit.</p>`;
   svcBox = el.querySelector("[data-ins-svc]");
   el.querySelector("[data-ins-sort]").addEventListener("change", (e) => {
     st.svcSort = e.target.value;
@@ -425,46 +426,7 @@ async function renderAmbassadors(el, w) {
 }
 
 async function renderFinance(el, w) {
-  const f = await load("finance", w);
-  const est = f.estimate || {};
-  const cost = num(est.est_cost);
-  const cov = num(est.covered_revenue);
-  const covPct = num(f.revenue) > 0 ? Math.round((cov / num(f.revenue)) * 100) : 0;
-  el.innerHTML = `
-    <h3 class="adash-h" style="margin:0 0 var(--sp-3)">Actual money <span class="adash-h__meta">recorded in the database</span></h3>
-    <div class="adash-kpis">
-      ${card("Wallet deposits", formatCurrency(f.deposits_cur), deltaHtml(num(f.deposits_cur), num(f.deposits_prev)))}
-      ${card("Customer spending (paid orders)", formatCurrency(f.revenue))}
-      ${card("Wallet spend on orders", formatCurrency(f.wallet_spend))}
-      ${card("Outstanding wallet balances", formatCurrency(f.wallet_outstanding), `${formatNumber(f.wallets_funded)} funded wallets`)}
-      ${card("Refunded orders", formatCurrency(f.refunded_value), `${formatNumber(f.refunded_count)} order${num(f.refunded_count) === 1 ? "" : "s"}`)}
-      ${card("Loyalty discounts", formatCurrency(f.loyalty_discounts), "Already deducted from revenue")}
-      ${card("Ambassador commission", formatCurrency(f.commissions_generated), `${formatCurrency(f.commissions_reversed)} reversed · ${formatCurrency(f.commission_adjustments)} adjustments`)}
-      ${card("Withdrawals paid", formatCurrency(f.withdrawals_paid), `${formatCurrency(f.withdrawals_pending)} awaiting payout`)}
-      ${card("Failed / expired payments", formatNumber(f.payments_failed), `${formatNumber(f.payments_cancelled)} cancelled`)}
-    </div>
-    <h3 class="adash-h" style="margin:var(--sp-6) 0 var(--sp-3)">Estimated <span class="adash-h__meta">not audited accounting profit</span></h3>
-    <div class="adash-kpis">
-      ${est.fx ? `
-        ${card("Estimated provider cost", formatCurrency(cost), "Estimated")}
-        ${card("Estimated gross profit", formatCurrency(cov - cost), `Estimated · covers ${covPct}% of revenue`)}
-        ${card("USD → KES rate used", String(num(est.fx)), "Set by an admin")}` :
-      card("Estimated gross profit", "—", "Set the USD → KES rate below to calculate an estimate")}
-    </div>
-    <form class="loyalty-admin-grid" data-ins-fx style="margin-top:var(--sp-4);max-width:520px">
-      <div class="form-field"><label for="ins-fx">USD → KES exchange rate</label>
-        <input id="ins-fx" name="fx" type="number" step="0.01" min="0" value="${est.fx ? num(est.fx) : ""}" placeholder="e.g. 129" />
-        <span class="form-hint">Provider rates are stored in USD. The estimate covers per-quantity services with a known rate only.</span></div>
-      <div><button type="submit" class="btn btn--primary btn--sm">Save rate</button></div>
-    </form>`;
-  el.querySelector("[data-ins-fx]").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const { error } = await supabase.rpc("admin_set_business_setting", { p_key: "usd_kes_rate", p_value: e.target.fx.value || null });
-    if (error) return void showToast(error.message || "Couldn't save the rate.", "error", 5000);
-    showToast("Exchange rate saved.", "success");
-    st.cache.clear();
-    render();
-  });
+  await renderFinanceCentre(el, w);
 }
 
 async function renderProvider(el, w) {

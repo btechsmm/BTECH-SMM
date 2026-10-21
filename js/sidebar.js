@@ -60,7 +60,7 @@ export const ICONS = {
 function sidebarLinkHtml(l, activeKey) {
   const active = l.key === activeKey;
   return `
-    <a href="${l.href}" class="sidebar-link ${active ? "sidebar-link--active" : ""}" ${active ? 'aria-current="page"' : ""}>
+    <a href="${l.href}" class="sidebar-link ${active ? "sidebar-link--active" : ""}" data-nav-key="${l.key}" ${active ? 'aria-current="page"' : ""}>
       <span class="sidebar-link__icon" aria-hidden="true">${ICONS[l.icon] || ""}</span>
       <span class="sidebar-link__label">${l.label}</span>
     </a>`;

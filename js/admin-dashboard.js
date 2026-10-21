@@ -11,8 +11,8 @@
  * service worker or the PWA to cache. Every number comes from real rows; when a
  * period has no data the section says so instead of drawing anything.
  *
- * Not shown on purpose: profit/margin. Provider rates are stored in USD and the
- * database has no exchange rate, so a KES margin can't be calculated honestly.
+ * Not shown on purpose: profit/margin. Finance & Accounts (BTECH INSIGHTS → Finance) owns profit, using
+ * per-order provider cost snapshots (Delix rates are interpreted as KES for BTECH accounting).
  */
 
 import { supabase } from "./supabase.js";

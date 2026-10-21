@@ -103,6 +103,14 @@ function looksSignedIn() {
   return false;
 }
 
+/**
+ * The sidebar is saved (as a template with no active link) so prepaint.js, a tiny synchronous script at the
+ * top of <body>, can draw it in the very first frame of the NEXT page. Without that, every click was a full page
+ * load whose first frame had no sidebar, so it vanished and came back. Keep the key in step with prepaint.js.
+ */
+const SIDEBAR_TPL_KEY = "btech:sidebar-tpl:v1:";
+const NO_ACTIVE_LINK = "\u0000";
+
 function paintCustomerShell() {
   const body = document.body;
   if (!body || body.dataset.nav !== "customer") return;
@@ -114,9 +122,20 @@ function paintCustomerShell() {
     body.insertAdjacentHTML("afterbegin", `<aside class="customer-sidebar" aria-label="Sidebar"></aside>`);
     aside = document.querySelector(".customer-sidebar");
   }
-  const html = customerSidebar(body.dataset.page || "", looksSignedIn());
-  aside.innerHTML = html;
+  const authed = looksSignedIn();
+  const html = customerSidebar(body.dataset.page || "", authed);
+  const tpl = customerSidebar(NO_ACTIVE_LINK, authed);
+
+  // prepaint.js may already have drawn exactly this sidebar. Rebuilding identical markup is pointless
+  // (and would drop hover/focus), so only touch the DOM when what is there is not the current template.
+  if (aside.__tpl !== tpl) aside.innerHTML = html;
   aside._html = html;
+
+  try {
+    if (localStorage.getItem(SIDEBAR_TPL_KEY + (authed ? "a" : "g")) !== tpl) localStorage.setItem(SIDEBAR_TPL_KEY + (authed ? "a" : "g"), tpl);
+  } catch {
+    /* storage blocked: the sidebar is simply drawn by this module, as before */
+  }
 
   const header = document.getElementById("site-header");
   if (header && !header.className) header.className = "topbar";

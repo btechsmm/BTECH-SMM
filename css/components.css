@@ -3780,3 +3780,116 @@ body[data-nav="customer"]:not(.has-sidebar) #site-header {
     padding-bottom: calc(var(--bottom-nav-height) + var(--sp-6));
   }
 }
+
+/* ==========================================================================
+   Top bar always white, larger logos, steadier sidebar  (added on top of the rules above)
+   ----------------------------------------------------------------------
+   1. The top bars (marketing/admin .site-header, customer .topbar, the mobile menu that drops from it)
+      are WHITE in both themes. Rather than re-colouring every child, the light colour tokens are
+      re-declared on the bar itself; custom properties inherit, so links, icon buttons, the wallet pill,
+      the notification panel and the profile chip all resolve to their light-theme colours inside it.
+   2. The logo is blue artwork: it is shown on white everywhere, and larger, so it is easy to see.
+   3. Reserve the scrollbar's width on customer pages so the layout cannot shift sideways when a page
+      grows taller than the window.
+   ========================================================================== */
+
+.site-header,
+.topbar,
+.nav-mobile,
+body[data-nav="customer"]:not(.has-sidebar) #site-header {
+  --surface-card: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #eef2f8;
+  --border-color: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --soft-blue: #eaf3ff;
+  --shadow-sm: 0 1px 2px rgba(7, 26, 61, 0.06);
+  --shadow-md: 0 8px 24px rgba(7, 26, 61, 0.08);
+  --shadow-lg: 0 20px 48px rgba(7, 26, 61, 0.14);
+  color-scheme: light;
+}
+
+.site-header,
+.topbar,
+body[data-nav="customer"]:not(.has-sidebar) #site-header {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+/* Dark-theme colour rules written for a dark bar: put them back to the light-bar values. */
+.topbar .wallet-pill__value,
+.topbar .wallet-pill__icon,
+:root[data-theme="dark"] .topbar .wallet-pill__value,
+:root[data-theme="dark"] .topbar .wallet-pill__icon,
+:root[data-theme="dark"] .topbar .admin-portal-btn {
+  /* a slightly deeper brand blue so the balance passes AA contrast on the pale-blue pill (brand blue was ~3.9:1) */
+  color: #0b5ec9;
+}
+
+:root[data-theme="dark"] .topbar .link-btn:hover,
+:root[data-theme="dark"] .site-header .link-btn:hover {
+  color: var(--color-deep);
+}
+
+/* ----- Logos ----- */
+.site-header .brand__logo,
+:root[data-theme="dark"] .site-header .brand__logo {
+  /* the bar is white in both themes, so no plate is needed */
+  height: 38px;
+  width: auto;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+@media (max-width: 480px) {
+
+  .site-header .brand__logo,
+  :root[data-theme="dark"] .site-header .brand__logo {
+    height: 32px;
+  }
+}
+
+/* Sidebar logo: a bigger mark on its white plate. */
+.sidebar__logo img {
+  width: 100%;
+  max-width: 196px;
+  height: auto;
+}
+
+/* Login / register card. */
+.auth-card__logo img {
+  height: 48px;
+  width: auto;
+}
+
+:root[data-theme="dark"] .auth-card__logo img {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  box-sizing: content-box;
+}
+
+/* Footer: navy in both themes, so the blue logo always sits on a white plate. */
+.site-footer .brand__logo,
+:root[data-theme="dark"] .site-footer .brand__logo {
+  height: 36px;
+  width: auto;
+  background: #ffffff;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  box-sizing: content-box;
+}
+
+/* ----- Layout stability on customer pages ----- */
+html:has(body[data-nav="customer"]) {
+  scrollbar-gutter: stable;
+}
+
+/* The sidebar is a fixed, self-contained column: never let page content or animation affect it. */
+.customer-sidebar {
+  contain: layout paint style;
+  transition: none;
+  animation: none;
+}

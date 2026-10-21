@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/responsive.css" />
   <link rel="stylesheet" href="css/ambassador.css" />
+  <link rel="stylesheet" href="css/support-chat.css" />
 </head>
 
 <body data-page="admin" data-nav="admin" data-requires-auth="true">
@@ -61,6 +62,7 @@
           <a href="#provider-section">Provider</a>
           <a href="#users-section">Users</a>
           <a href="#ambassadors-section">Ambassadors</a>
+          <a href="#support-section">Support</a>
           <a href="insights">Insights</a>
           <a href="#loyalty-section">Loyalty</a>
           <a href="#settings-section">Settings</a>
@@ -330,8 +332,10 @@
         <div class="empty-state empty-state--compact" data-admin-services-empty hidden>
           <p>No services match your search.</p>
         </div>
-        <p class="form-hint" style="padding:0 var(--sp-5) var(--sp-4)">Margin can't be computed automatically — provider
-          cost is in USD and BTECH price is in KES, and this app deliberately never invents an exchange rate.</p>
+        <p class="form-hint" style="padding:0 var(--sp-5) var(--sp-4)">Delix rates are interpreted as KES for BTECH
+          accounting
+          (Delix labels them “USD”, which is not converted). Profit is calculated per order in Finance &amp; Accounts
+          under Insights.</p>
       </div>
 
       <div class="modal-overlay" data-service-modal hidden>
@@ -445,7 +449,7 @@
                 <th>BTECH Service</th>
                 <th>Delix Service ID</th>
                 <th>Provider Name</th>
-                <th>Rate (USD)</th>
+                <th>Delix rate (KES)</th>
                 <th>Refill / Cancel</th>
                 <th>Status</th>
                 <th>Last Synced</th>
@@ -471,7 +475,7 @@
                 <th>Delix ID</th>
                 <th>Name</th>
                 <th>Category</th>
-                <th>Rate (USD)</th>
+                <th>Delix rate (KES)</th>
                 <th>Min–Max</th>
                 <th>Mapped</th>
                 <th></th>
@@ -538,6 +542,17 @@
         </div>
         <p class="form-hint" style="padding:0 var(--sp-5) var(--sp-4)">Role changes and account suspension aren't built
           in this pass — this list is read-only, sourced live from Supabase.</p>
+      </div>
+
+      <div id="support-section" class="panel" style="margin-bottom:var(--sp-8)">
+        <div class="panel__head">
+          <h3>Customer Service &amp; Support</h3>
+        </div>
+        <div data-support-admin>
+          <div class="panel__body panel__body--padded">
+            <div class="skeleton" style="height:120px"></div>
+          </div>
+        </div>
       </div>
 
       <div id="ambassadors-section" class="panel" style="margin-bottom:var(--sp-8)">
