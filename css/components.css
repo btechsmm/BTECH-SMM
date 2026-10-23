@@ -559,6 +559,7 @@
 }
 
 @media (max-width: 767px) {
+
   body[data-nav="app"] .whatsapp-fab,
   body.has-sidebar .whatsapp-fab {
     bottom: calc(var(--bottom-nav-height) + var(--sp-4) + env(safe-area-inset-bottom, 0px));
@@ -818,19 +819,151 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
-/* ---------- Platform badges ----------
-   Circular brand icons shared by the catalogue tiles, service-card tags, orders and admin. The artwork
-   (white glyphs) lives in services.js; the colour per platform is set here. Solid brand colours, with
-   Instagram's signature gradient as the one recognisable exception. */
+/* ---------- Platform brand colours (single source of truth) ----------
+   Every platform sets three custom properties; components only ever read them:
+     --pf      official brand colour (icon badge fill)
+     --pf-on   glyph colour that stays legible on --pf (yellow Snapchat/green WhatsApp need dark glyphs)
+     --pf-ink  text/line-safe variant of the brand colour (>= 4.5:1 on the card surface), light + dark
+   Applied to platform badges, platform tags, service-card top rule, tile hover and the breadcrumb.
+   Prices, descriptions and form labels stay neutral. Unknown platforms fall back to BTECH blue. */
+:root {
+  --pf: var(--color-primary);
+  --pf-on: #ffffff;
+  --pf-ink: var(--color-deep);
+}
+
+:root[data-theme="dark"] {
+  --pf-ink: #7db8ff;
+}
+
+[data-platform="facebook"],
+.platform-badge--facebook,
+.platform-tag--facebook {
+  --pf: #1877f2;
+  --pf-on: #ffffff;
+  --pf-ink: #1565d8;
+}
+
+[data-platform="instagram"],
+.platform-badge--instagram,
+.platform-tag--instagram {
+  --pf: #e4405f;
+  --pf-on: #ffffff;
+  --pf-ink: #c13584;
+}
+
+[data-platform="tiktok"],
+.platform-badge--tiktok,
+.platform-tag--tiktok {
+  --pf: #000000;
+  --pf-on: #ffffff;
+  --pf-ink: #111111;
+}
+
+[data-platform="youtube"],
+.platform-badge--youtube,
+.platform-tag--youtube {
+  --pf: #ff0000;
+  --pf-on: #ffffff;
+  --pf-ink: #cc0000;
+}
+
+[data-platform="x"],
+.platform-badge--x,
+.platform-tag--x {
+  --pf: #000000;
+  --pf-on: #ffffff;
+  --pf-ink: #0f1419;
+}
+
+[data-platform="whatsapp"],
+.platform-badge--whatsapp,
+.platform-tag--whatsapp {
+  --pf: #25d366;
+  --pf-on: #0b3d1f;
+  --pf-ink: #0e7a4f;
+}
+
+[data-platform="telegram"],
+.platform-badge--telegram,
+.platform-tag--telegram {
+  --pf: #229ed9;
+  --pf-on: #ffffff;
+  --pf-ink: #0d6c9c;
+}
+
+[data-platform="linkedin"],
+.platform-badge--linkedin,
+.platform-tag--linkedin {
+  --pf: #0a66c2;
+  --pf-on: #ffffff;
+  --pf-ink: #0a66c2;
+}
+
+[data-platform="snapchat"],
+.platform-badge--snapchat,
+.platform-tag--snapchat {
+  --pf: #fffc00;
+  --pf-on: #000000;
+  --pf-ink: #6b6500;
+}
+
+[data-platform="pinterest"],
+.platform-badge--pinterest,
+.platform-tag--pinterest {
+  --pf: #e60023;
+  --pf-on: #ffffff;
+  --pf-ink: #bd081c;
+}
+
+:root[data-theme="dark"] :is([data-platform="facebook"], .platform-badge--facebook, .platform-tag--facebook) {
+  --pf-ink: #6aa8ff;
+}
+
+:root[data-theme="dark"] :is([data-platform="instagram"], .platform-badge--instagram, .platform-tag--instagram) {
+  --pf-ink: #f06a98;
+}
+
+:root[data-theme="dark"] :is([data-platform="tiktok"], .platform-badge--tiktok, .platform-tag--tiktok) {
+  --pf-ink: #25f4ee;
+}
+
+:root[data-theme="dark"] :is([data-platform="youtube"], .platform-badge--youtube, .platform-tag--youtube) {
+  --pf-ink: #ff6b6b;
+}
+
+:root[data-theme="dark"] :is([data-platform="x"], .platform-badge--x, .platform-tag--x) {
+  --pf-ink: #e7e9ea;
+}
+
+:root[data-theme="dark"] :is([data-platform="whatsapp"], .platform-badge--whatsapp, .platform-tag--whatsapp) {
+  --pf-ink: #25d366;
+}
+
+:root[data-theme="dark"] :is([data-platform="telegram"], .platform-badge--telegram, .platform-tag--telegram) {
+  --pf-ink: #4cc0f5;
+}
+
+:root[data-theme="dark"] :is([data-platform="linkedin"], .platform-badge--linkedin, .platform-tag--linkedin) {
+  --pf-ink: #71b7fb;
+}
+
+:root[data-theme="dark"] :is([data-platform="snapchat"], .platform-badge--snapchat, .platform-tag--snapchat) {
+  --pf-ink: #fffc00;
+}
+
+:root[data-theme="dark"] :is([data-platform="pinterest"], .platform-badge--pinterest, .platform-tag--pinterest) {
+  --pf-ink: #ff7a8c;
+}
+
 .platform-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   border-radius: 50%;
-  color: #fff;
-  background: var(--color-primary);
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+  color: var(--pf-on);
+  background: var(--pf-bg, var(--pf));
 }
 
 .platform-badge svg {
@@ -839,44 +972,37 @@
   height: 100%;
 }
 
-.platform-badge--facebook {
-  background: #1877f2;
+/* Instagram: its gradient is the one official-brand exception to solid fills. */
+.platform-badge--instagram,
+.platform-badge[data-platform="instagram"] {
+  --pf-bg: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
 }
 
-.platform-badge--instagram {
-  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
-}
-
-.platform-badge--telegram {
-  background: #229ed9;
-}
-
-.platform-badge--youtube {
-  background: #ff0000;
-}
-
-.platform-badge--tiktok,
-.platform-badge--x {
-  background: #000;
-}
-
-/* The black icons (X, TikTok) would disappear on a dark card, so they get a thin light ring there. */
+/* Black brand icons (X, TikTok) would vanish on a dark card, so they get a thin light ring there. */
 :root[data-theme="dark"] .platform-badge--tiktok,
-:root[data-theme="dark"] .platform-badge--x {
+:root[data-theme="dark"] .platform-badge--x,
+:root[data-theme="dark"] .platform-badge[data-platform="tiktok"],
+:root[data-theme="dark"] .platform-badge[data-platform="x"] {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
-[data-services-breadcrumb] a {
-  color: var(--color-primary);
+.platform-tag {
+  background: color-mix(in srgb, var(--pf-ink) 11%, var(--surface-card));
+  color: var(--pf-ink);
 }
 
-[data-services-breadcrumb] span:not(.muted) {
-  color: var(--text-primary);
-  font-weight: 600;
+.service-card[data-platform] {
+  border-top: 3px solid var(--pf-ink);
 }
 
-:root[data-theme="dark"] .platform-tag {
-  color: #7db8ff;
+.catalogue-tile[data-platform]:hover,
+.catalogue-tile[data-platform]:focus-visible {
+  border-color: var(--pf-ink);
+}
+
+[data-services-breadcrumb] a,
+[data-services-breadcrumb] [data-platform] {
+  color: var(--pf-ink, var(--color-primary));
 }
 
 .badge {
@@ -1277,12 +1403,13 @@ html[data-auth-return] .auth-card::after {
   max-width: 100%;
 }
 
-.table-card > .data-table {
+.table-card>.data-table {
   border: none;
   border-radius: 0;
 }
 
 @media (min-width: 721px) {
+
   .table-card .data-table th,
   .table-card .data-table td {
     padding: var(--sp-3) 10px;

@@ -145,3 +145,21 @@ cleanAddressBar();
 captureAuthRedirect();
 applyTheme();
 paintCustomerShell();
+
+/**
+ * Soft-keyboard detection: while a text field is focused and the visual viewport is much shorter than
+ * the layout viewport, mark <body> so fixed floating controls (WhatsApp, chat launcher) step aside
+ * instead of floating over the field being typed in.
+ */
+(function trackKeyboard() {
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const update = () => {
+    const a = document.activeElement;
+    const typing = a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA" || a.tagName === "SELECT" || a.isContentEditable);
+    const open = typing && window.innerHeight - vv.height > 150;
+    if (document.body) document.body.classList.toggle("kbd-open", !!open);
+  };
+  vv.addEventListener("resize", update);
+  document.addEventListener("focusout", () => setTimeout(update, 50));
+})();

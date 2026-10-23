@@ -28,9 +28,9 @@
   padding: clamp(18px, 4vw, 26px);
   border-radius: 20px;
   color: #fff;
-  background: linear-gradient(160deg, var(--rw-navy-2) 0%, var(--rw-navy) 62%);
+  background: var(--rw-navy);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 14px 34px rgba(11, 33, 72, 0.28);
+  box-shadow: none;
 }
 
 .rw-card::after {

@@ -371,3 +371,138 @@ body {
     bottom: calc(var(--bottom-nav-height) + var(--sp-4) + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* ==========================================================================
+   Mobile UI refinement (topbar, catalogue, floating controls, focus)
+   ========================================================================== */
+
+/* Top bar: on narrow phones every control keeps a 40px touch target but the bar no longer overflows.
+   Wallet pill shrinks first; Admin Portal collapses to its icon (see components.css); profile shows
+   its avatar only; nothing is hidden by the viewport edge. */
+@media (max-width: 480px) {
+  .topbar__inner {
+    padding: 0 var(--sp-3);
+    gap: var(--sp-2);
+  }
+
+  .topbar__actions {
+    gap: var(--sp-2);
+    min-width: 0;
+  }
+
+  .topbar__actions>* {
+    flex-shrink: 0;
+  }
+
+  .topbar__actions .wallet-pill {
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 112px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .admin-portal-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 360px) {
+  .topbar__actions .wallet-pill {
+    max-width: 92px;
+    padding: 6px 8px;
+  }
+
+  .topbar__actions {
+    gap: 6px;
+  }
+}
+
+/* Catalogue: calmer type and spacing on phones; long names wrap instead of overflowing. */
+@media (max-width: 640px) {
+
+  body[data-page="services"] h1,
+  body[data-page="services"] .page-head h1 {
+    font-size: clamp(1.4rem, 6vw, 1.75rem);
+    line-height: 1.2;
+  }
+
+  body[data-page="services"] .page-head p {
+    font-size: var(--fs-sm);
+  }
+
+  .catalogue-tile__label,
+  .service-card__name,
+  .platform-tag,
+  [data-services-breadcrumb] {
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+
+  .catalogue-tile {
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  .catalogue-tile__icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .service-card {
+    padding: var(--sp-4);
+  }
+}
+
+/* Very small phones: single-column service cards. */
+@media (max-width: 340px) {
+  body[data-page="services"] .catalogue-tile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Visible keyboard focus for the interactive pieces touched above. */
+.catalogue-tile:focus-visible,
+.icon-btn:focus-visible,
+.admin-portal-btn:focus-visible,
+.wallet-pill:focus-visible,
+.whatsapp-fab:focus-visible,
+.bottom-nav a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Floating controls: WhatsApp is static (no hover growth); both step aside while the keyboard is open. */
+.whatsapp-fab:hover,
+.whatsapp-fab:active {
+  transform: none;
+}
+
+/* Tablet (sidebar visible, ~530-780px of top bar): drop the text parts of the profile chip and Admin
+   Portal button so the bar never overflows; wallet pill keeps a 40px touch height on phones. */
+@media (min-width: 768px) and (max-width: 1099px) {
+
+  .topbar__profile-name,
+  .topbar__profile-caret,
+  .admin-portal-btn span {
+    display: none;
+  }
+
+  .admin-portal-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar__actions .wallet-pill {
+    min-height: 40px;
+    align-items: center;
+  }
+}

@@ -327,7 +327,7 @@
     border-radius: 20px;
     color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 12px 30px rgba(11, 33, 72, 0.24);
+    box-shadow: var(--shadow-sm);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -343,15 +343,15 @@
 }
 
 .fin-hero--revenue {
-    background: linear-gradient(160deg, #10295a 0%, #0b2148 62%);
+    background: #10295a;
 }
 
 .fin-hero--profit {
-    background: linear-gradient(160deg, #1366cf 0%, #0b2e6e 100%);
+    background: #1366cf;
 }
 
 .fin-hero--wallet {
-    background: linear-gradient(160deg, #0f2a5c 0%, #0b2148 70%);
+    background: #0f2a5c;
 }
 
 .fin-hero--profit::after {
@@ -360,7 +360,7 @@
 
 .fin-hero:hover {
     transform: translateY(-3px);
-    box-shadow: 0 18px 38px rgba(11, 33, 72, 0.3);
+    box-shadow: var(--shadow-sm);
 }
 
 .fin-hero:focus-visible,

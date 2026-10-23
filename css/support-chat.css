@@ -1,6 +1,7 @@
 /* BTECH CUSTOMER SUPPORT — chat widget, support thread, admin support. Uses existing design tokens. */
 
 .sc {
+  position: relative;
   display: flex;
   flex-direction: column;
   background: var(--surface-card);
@@ -9,7 +10,7 @@
   overflow: hidden;
   min-height: 420px;
   max-height: 640px;
-  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
 }
 
 .sc[hidden] {
@@ -17,19 +18,15 @@
 }
 
 .sc__head {
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4);
+  gap: var(--sp-2);
+  min-height: 52px;
+  padding: 6px var(--sp-2) 6px var(--sp-4);
   background: var(--color-navy);
   color: #fff;
-}
-
-.sc__logo {
-  border-radius: 8px;
   flex: none;
-  background: #fff;
-  padding: 2px;
 }
 
 .sc__titles {
@@ -40,26 +37,30 @@
 .sc__title {
   font-weight: 700;
   font-size: var(--fs-sm);
-  letter-spacing: 0.02em;
-}
-
-.sc__sub {
-  font-size: var(--fs-xs);
-  color: var(--text-on-navy);
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sc__status {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: var(--fs-xs);
-  color: var(--text-on-navy);
-  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.3;
+  opacity: 0.85;
+}
+
+.sc__status span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sc__dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #94a3b8;
   flex: none;
@@ -75,50 +76,59 @@
 
 .sc__actions {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   flex: none;
 }
 
 .sc__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  color: #fff;
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  font: inherit;
-  font-size: var(--fs-xs);
+  border: 0;
+  color: inherit;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  min-height: 32px;
-  transition: background var(--transition-fast);
 }
 
 .sc__icon:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .sc__icon:focus-visible,
 .sc__chip:focus-visible,
+.sc__send:focus-visible,
 .sc-launcher:focus-visible,
 .sc__history-item:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
+.sc__head .sc__icon:focus-visible {
+  outline-color: #fff;
+  outline-offset: -2px;
+}
+
 .sc__log {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
-  padding: var(--sp-4);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--sp-3) var(--sp-3);
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
   background: var(--surface-page);
-  min-height: 200px;
 }
 
 .sc__msg {
   display: flex;
   flex-direction: column;
-  max-width: 88%;
+  max-width: 86%;
+  min-width: 0;
 }
 
 .sc__msg--user {
@@ -131,12 +141,13 @@
 }
 
 .sc__bubble {
-  padding: 10px 14px;
-  border-radius: 14px;
+  padding: 9px 12px;
+  border-radius: 16px;
   font-size: var(--fs-sm);
-  line-height: 1.5;
+  line-height: 1.45;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .sc__msg--user .sc__bubble {
@@ -153,15 +164,16 @@
 }
 
 .sc__time {
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--text-secondary);
-  margin-top: 3px;
+  margin: 2px 4px 0;
 }
 
 .sc__sources {
   font-size: var(--fs-xs);
   color: var(--text-secondary);
   margin-top: 4px;
+  overflow-wrap: anywhere;
 }
 
 .sc__sources a {
@@ -173,8 +185,9 @@
   background: var(--surface-sunken);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 10px 14px;
+  padding: 9px 12px;
   color: var(--text-primary);
+  overflow-wrap: anywhere;
 }
 
 .sc__notice--error {
@@ -182,7 +195,7 @@
 }
 
 .sc__notice .btn {
-  margin: 0 4px;
+  margin-left: 4px;
 }
 
 .sc__typing .sc__bubble {
@@ -220,13 +233,21 @@
   }
 }
 
+/* Quick-start chips: one scrollable row so they never eat the message area */
 .sc__chips {
+  flex: none;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
-  padding: var(--sp-3) var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  overflow-x: auto;
   border-top: 1px solid var(--border-color);
   background: var(--surface-card);
+  scrollbar-width: none;
+}
+
+.sc__chips::-webkit-scrollbar {
+  display: none;
 }
 
 .sc__chips[hidden] {
@@ -234,16 +255,18 @@
 }
 
 .sc__chip {
+  flex: none;
   border: 1px solid var(--border-strong);
   background: var(--surface-card);
   color: var(--text-primary);
   border-radius: var(--radius-full);
-  padding: 7px 12px;
+  padding: 0 12px;
+  min-height: 36px;
   font: inherit;
   font-size: var(--fs-xs);
   font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
-  transition: border-color var(--transition-fast), background var(--transition-fast);
 }
 
 .sc__chip:hover {
@@ -252,10 +275,12 @@
 }
 
 .sc__composer {
+  flex: none;
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  padding: var(--sp-3) var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  padding-bottom: calc(var(--sp-2) + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--border-color);
   background: var(--surface-card);
   position: relative;
@@ -267,45 +292,52 @@
 
 .sc__input {
   flex: 1;
+  min-width: 0;
   resize: none;
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
-  padding: 10px 12px;
+  border-radius: 20px;
+  padding: 10px 14px;
   font: inherit;
-  font-size: var(--fs-sm);
-  background: var(--surface-card);
+  font-size: 16px;
+  line-height: 1.35;
+  background: var(--surface-page);
   color: var(--text-primary);
+  min-height: 44px;
   max-height: 120px;
 }
 
-.sc__input:focus {
+.sc__input::placeholder {
+  color: var(--text-secondary);
+}
+
+.sc__input:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 0;
   border-color: var(--color-primary);
 }
 
 .sc__send {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   background: var(--primary-solid);
   color: #fff;
   border: 0;
-  border-radius: var(--radius-md);
-  padding: 10px 16px;
-  font: inherit;
-  font-weight: 600;
-  font-size: var(--fs-sm);
+  border-radius: 50%;
   cursor: pointer;
-  min-height: 40px;
 }
 
-.sc__send:disabled,
-.sc__input:disabled {
-  opacity: 0.6;
+.sc__send:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
 .sc__count {
   position: absolute;
-  right: 90px;
+  right: 64px;
   top: -2px;
   font-size: 11px;
   color: var(--text-secondary);
@@ -313,15 +345,11 @@
 
 .sc__history {
   position: absolute;
-  inset: 58px 0 0 0;
+  inset: 52px 0 0 0;
   background: var(--surface-card);
   padding: var(--sp-4);
   overflow-y: auto;
   z-index: 2;
-}
-
-.sc {
-  position: relative;
 }
 
 .sc__history[hidden] {
@@ -338,11 +366,13 @@
   justify-content: space-between;
   gap: 8px;
   width: 100%;
+  min-height: 44px;
+  align-items: center;
   text-align: left;
   background: var(--surface-page);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 10px 12px;
+  padding: 8px 12px;
   margin-bottom: 8px;
   cursor: pointer;
   font: inherit;
@@ -354,6 +384,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .sc__muted {
@@ -407,12 +438,12 @@
   border-radius: var(--radius-sm);
   padding: 8px 10px;
   font: inherit;
-  font-size: var(--fs-sm);
+  font-size: 16px;
   background: var(--surface-card);
   color: var(--text-primary);
 }
 
-/* Floating launcher: sits above the WhatsApp button, clear of the mobile bottom nav */
+/* Floating launcher: sits above the WhatsApp button (which stays static), clear of the bottom nav */
 .sc-launcher {
   position: fixed;
   right: var(--sp-4);
@@ -430,11 +461,11 @@
 }
 
 .sc-launcher__icon {
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
   display: block;
-  filter: drop-shadow(0 6px 10px rgba(7, 26, 61, 0.3));
-  transition: transform var(--transition-fast);
+  transform-origin: 50% 60%;
+  animation: sc-heartbeat 9s ease-in-out 4s infinite;
 }
 
 .sc-launcher__label {
@@ -446,16 +477,43 @@
   padding: 5px 9px;
   border-radius: var(--radius-full);
   white-space: nowrap;
-  box-shadow: var(--shadow-sm);
   margin-top: -8px;
 }
 
-.sc-launcher:hover .sc-launcher__icon {
-  transform: translateY(-2px) scale(1.04);
+.sc-launcher:active .sc-launcher__icon {
+  transform: scale(0.94);
+  animation: none;
+}
+
+.sc-launcher:hover .sc-launcher__icon,
+.sc-launcher:focus-visible .sc-launcher__icon {
+  animation: none;
 }
 
 .sc-launcher[hidden] {
   display: none;
+}
+
+/* Subtle double-beat once every ~9s; idle the rest of the time */
+@keyframes sc-heartbeat {
+
+  0%,
+  12%,
+  100% {
+    transform: scale(1);
+  }
+
+  4% {
+    transform: scale(1.09);
+  }
+
+  8% {
+    transform: scale(1.03);
+  }
+
+  10% {
+    transform: scale(1.07);
+  }
 }
 
 .sc--floating {
@@ -463,10 +521,15 @@
   right: var(--sp-5);
   bottom: var(--sp-5);
   width: 380px;
-  height: min(600px, calc(100vh - 40px));
+  height: min(600px, calc(100dvh - 40px));
   max-height: none;
   z-index: 260;
-  box-shadow: 0 12px 40px rgba(7, 26, 61, 0.28);
+  box-shadow: var(--shadow-md);
+}
+
+body.kbd-open .sc-launcher,
+body.kbd-open .whatsapp-fab {
+  display: none;
 }
 
 @media (max-width: 767px) {
@@ -474,35 +537,34 @@
   .sc-launcher,
   body.has-sidebar .sc-launcher {
     bottom: calc(var(--bottom-nav-height) + var(--sp-4) + 52px + 12px + env(safe-area-inset-bottom, 0px));
+    right: var(--sp-3);
   }
 
+  .sc-launcher__label {
+    display: none;
+  }
+
+  /* Full-screen messenger. --sc-vh/--sc-top come from visualViewport so the composer sits above the keyboard. */
   .sc--floating {
-    inset: 0;
+    top: var(--sc-top, 0px);
+    left: 0;
+    right: 0;
+    bottom: auto;
     width: auto;
-    height: auto;
+    height: var(--sc-vh, 100dvh);
+    min-height: 0;
     border-radius: 0;
     border: 0;
+    box-shadow: none;
   }
 
   body.sc-open {
     overflow: hidden;
   }
 
-  .sc__history {
-    inset: 64px 0 0 0;
-  }
-
-  .sc__title {
-    font-size: 12px;
-    letter-spacing: 0;
-  }
-
-  .sc__icon {
-    padding: 6px 8px;
-  }
-
-  .sc__logo {
-    display: none;
+  .support-chat-wrap .sc {
+    height: min(560px, calc(100dvh - var(--header-height) - var(--bottom-nav-height) - 32px));
+    min-height: 360px;
   }
 }
 
@@ -512,8 +574,13 @@
     opacity: 0.6;
   }
 
+  .sc-launcher__icon {
+    animation: none;
+  }
+
   .sc-launcher,
-  .sc__chip {
+  .sc__chip,
+  .sc__icon {
     transition: none;
   }
 }

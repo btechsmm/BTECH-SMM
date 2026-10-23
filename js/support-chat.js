@@ -65,49 +65,59 @@ export function mountSupportChat(root, { floating = false, onClose = null } = {}
   root.setAttribute("role", floating ? "dialog" : "region");
   root.setAttribute("aria-label", "BTECH CUSTOMER SUPPORT chat");
 
-  // ---- Header
+  // ---- Header (compact: title + honest status, icon buttons)
   const head = el("div", "sc__head");
-  const logo = el("img", "sc__logo"); logo.src = "assets/brand/icon-32.png"; logo.alt = ""; logo.width = 32; logo.height = 32;
   const titles = el("div", "sc__titles");
-  titles.append(el("div", "sc__title", "BTECH CUSTOMER SUPPORT"), el("div", "sc__sub", "Your BTECH SMM assistant"));
+  titles.append(el("div", "sc__title", "BTECH Customer Support"));
   const status = el("div", "sc__status");
   const dot = el("span", "sc__dot"); dot.setAttribute("aria-hidden", "true");
-  const statusText = el("span", "", "Checking…");
+  const statusText = el("span", "", "Automated assistant");
   status.append(dot, statusText);
   titles.append(status);
   const actions = el("div", "sc__actions");
-  const btnHistory = el("button", "sc__icon", "History"); btnHistory.type = "button";
-  const btnNew = el("button", "sc__icon", "New"); btnNew.type = "button"; btnNew.title = "Start a new conversation"; btnNew.setAttribute("aria-label", "Start a new conversation");
+  const iconBtn = (label, svg, cls) => {
+    const b = el("button", `sc__icon${cls ? " " + cls : ""}`); b.type = "button";
+    b.title = label; b.setAttribute("aria-label", label);
+    b.innerHTML = svg; // static, trusted markup
+    return b;
+  };
+  const SVG = (d) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const btnHistory = iconBtn("Conversation history", SVG('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'));
+  const btnNew = iconBtn("Start a new conversation", SVG('<path d="M12 5v14M5 12h14"/>'));
   actions.append(btnHistory, btnNew);
   if (floating) {
-    const close = el("button", "sc__icon sc__icon--close", "Close"); close.type = "button"; close.setAttribute("aria-label", "Close chat");
+    const close = iconBtn("Close chat", SVG('<path d="M6 6l12 12M18 6L6 18"/>'), "sc__icon--close");
     close.addEventListener("click", () => onClose && onClose());
     actions.append(close);
   }
-  head.append(logo, titles, actions);
+  head.append(titles, actions);
 
   // ---- Body
   const log = el("div", "sc__log"); log.setAttribute("role", "log"); log.setAttribute("aria-live", "polite"); log.tabIndex = 0;
   const chips = el("div", "sc__chips");
   const historyPane = el("div", "sc__history"); historyPane.hidden = true;
 
-  // ---- Composer
+  // ---- Composer (textarea + icon send button; the input is never disabled so the Android keyboard stays open)
   const form = el("form", "sc__composer");
   const input = el("textarea", "sc__input"); input.rows = 1; input.placeholder = "Type your message…"; input.maxLength = 800;
-  input.setAttribute("aria-label", "Message to BTECH Support"); input.enterKeyHint = "send";
-  const send = el("button", "sc__send", "Send"); send.type = "submit";
+  input.setAttribute("aria-label", "Message to BTECH Support"); input.enterKeyHint = "send"; input.autocomplete = "off";
+  const send = el("button", "sc__send"); send.type = "submit"; send.title = "Send"; send.setAttribute("aria-label", "Send message");
+  send.innerHTML = SVG('<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>');
   const counter = el("span", "sc__count", ""); counter.setAttribute("aria-hidden", "true");
   form.append(input, send, counter);
 
   root.append(head, log, chips, historyPane, form);
 
-  function scrollDown() { log.scrollTop = log.scrollHeight; }
+  // Auto-scroll only when the reader is already at (or near) the bottom, or when they just sent something.
+  const nearBottom = () => log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+  function push(node) { const stick = nearBottom(); log.append(node); if (stick) log.scrollTop = log.scrollHeight; }
+  function scrollDown(force) { if (force || nearBottom()) log.scrollTop = log.scrollHeight; }
 
   function addMessage(role, text, iso, extra) {
     const row = el("div", `sc__msg sc__msg--${role}`);
     const bubble = el("div", "sc__bubble");
     bubble.textContent = text;
-    const meta = el("div", "sc__time", `${role === "user" ? "You" : "BTECH Support"} · ${time(iso)}`);
+    const meta = el("div", "sc__time", time(iso));
     row.append(bubble, meta);
     if (extra && extra.sources && extra.sources.length) {
       const src = el("div", "sc__sources", "Sources: ");
@@ -119,15 +129,14 @@ export function mountSupportChat(root, { floating = false, onClose = null } = {}
       });
       row.append(src);
     }
-    log.append(row);
-    scrollDown();
+    if (role === "user") { log.append(row); scrollDown(true); } else push(row);
     return row;
   }
 
   function addNotice(text, isError) {
     const n = el("div", `sc__notice${isError ? " sc__notice--error" : ""}`, text);
     n.setAttribute("role", isError ? "alert" : "status");
-    log.append(n); scrollDown();
+    push(n);
     return n;
   }
 
@@ -135,11 +144,11 @@ export function mountSupportChat(root, { floating = false, onClose = null } = {}
     const t = el("div", "sc__msg sc__msg--assistant sc__typing");
     t.setAttribute("aria-label", "BTECH Support is typing");
     const b = el("div", "sc__bubble"); b.append(el("span"), el("span"), el("span"));
-    t.append(b); log.append(t); scrollDown();
+    t.append(b); push(t);
     return t;
   }
 
-  function setBusy(v) { busy = v; send.disabled = v; input.disabled = v; if (!v) input.focus({ preventScroll: true }); }
+  function setBusy(v) { busy = v; send.disabled = v; root.setAttribute("aria-busy", v ? "true" : "false"); }
 
   // ---- Ticket proposal / manual request card
   function showTicketCard(proposal, { manual = false } = {}) {
@@ -190,7 +199,7 @@ export function mountSupportChat(root, { floating = false, onClose = null } = {}
         ok.disabled = false; ok.textContent = "Send to support";
       }
     });
-    log.append(card); scrollDown(); subj.focus({ preventScroll: true });
+    push(card); subj.focus({ preventScroll: true });
   }
 
   function maybeFeedback(force) {
@@ -206,25 +215,33 @@ export function mountSupportChat(root, { floating = false, onClose = null } = {}
       });
       box.append(b);
     });
-    log.append(box); scrollDown();
+    push(box);
   }
 
-  // ---- Sending
-  async function sendMessage(text) {
+  // ---- Sending (one request at a time; a failed send keeps its text and offers Retry without duplicating the bubble)
+  async function sendMessage(text, isRetry = false) {
     text = text.trim();
     if (!text || busy) return;
     chips.hidden = true;
-    addMessage("user", text);
-    input.value = ""; autoGrow();
+    if (!isRetry) { addMessage("user", text); scrollDown(true); input.value = ""; autoGrow(); }
     setBusy(true);
     const typing = showTyping();
+    const fail = (msg) => {
+      typing.remove();
+      const n = addNotice(msg, true);
+      const retry = el("button", "btn btn--ghost btn--sm", "Retry"); retry.type = "button";
+      retry.addEventListener("click", () => { n.remove(); sendMessage(text, true); });
+      n.append(" ", retry);
+      addFallbackActions();
+    };
     try {
       const res = await callAssistant({ action: "chat", conversation_id: conversationId, message: text });
-      typing.remove();
       if (!res || res.ok === false) {
+        typing.remove();
         addNotice((res && res.message) || "Something went wrong. Please try again.", true);
         if (res && res.error === "conversation_not_found") { conversationId = null; store.set(null); }
       } else {
+        typing.remove();
         if (res.conversation_id) { conversationId = res.conversation_id; store.set(conversationId); }
         addMessage("assistant", res.reply, null, { sources: res.sources });
         if (res.mode === "basic" && !basicMode) { basicMode = true; setStatus(); } else if (res.mode === "gemini" && basicMode) { basicMode = false; setStatus(); }
@@ -235,9 +252,7 @@ export function mountSupportChat(root, { floating = false, onClose = null } = {}
       }
     } catch (err) {
       console.error("[support-chat] could not call the support-assistant function:", err && (err.name || ""), err && err.message, err && err.context && err.context.status);
-      typing.remove();
-      addNotice("We could not reach support right now. Check your connection, or contact us directly.", true);
-      addFallbackActions();
+      fail("We could not reach support right now. Check your connection and retry.");
     }
     setBusy(false);
   }
@@ -248,7 +263,7 @@ export function mountSupportChat(root, { floating = false, onClose = null } = {}
     human.addEventListener("click", () => { box.remove(); showTicketCard(prefill || { category: "general", subject: "", message: "" }, { manual: !prefill }); });
     const faq = el("a", "btn btn--ghost btn--sm", "Open WhatsApp"); faq.href = `https://wa.me/${BUSINESS.whatsappNumber}`; faq.target = "_blank"; faq.rel = "noopener noreferrer";
     box.append(human, faq);
-    log.append(box); scrollDown();
+    push(box);
   }
 
   // ---- History
@@ -285,12 +300,13 @@ export function mountSupportChat(root, { floating = false, onClose = null } = {}
   function setStatus() {
     const smart = aiOnline && !basicMode;
     dot.className = `sc__dot ${smart ? "sc__dot--on" : "sc__dot--off"}`;
-    statusText.textContent = smart ? "Assistant online" : "Basic assistant · human support available";
+    statusText.textContent = smart ? "AI assistant enabled" : "Basic assistant · human help available";
   }
 
   function autoGrow() {
     input.style.height = "auto";
     input.style.height = Math.min(input.scrollHeight, 120) + "px";
+    send.disabled = busy;
     counter.textContent = input.value.length > 600 ? `${input.value.length}/800` : "";
   }
 
@@ -306,7 +322,12 @@ export function mountSupportChat(root, { floating = false, onClose = null } = {}
   btnHistory.addEventListener("click", showHistory);
   btnNew.addEventListener("click", startNew);
   input.addEventListener("input", autoGrow);
-  input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
+  const fine = window.matchMedia ? window.matchMedia("(pointer: fine)") : { matches: true };
+  input.addEventListener("keydown", (e) => {
+    if (e.isComposing || e.keyCode === 229) return; // Android/CJK IME composition: never hijack Enter
+    if (e.key === "Enter" && !e.shiftKey && fine.matches) { e.preventDefault(); form.requestSubmit(); } // desktop: Enter sends, Shift+Enter = newline; touch: Enter = newline
+  });
+  input.addEventListener("focus", () => { setTimeout(() => scrollDown(true), 250); });
   form.addEventListener("submit", (e) => { e.preventDefault(); sendMessage(input.value); });
 
   addMessage("assistant", WELCOME);
@@ -332,6 +353,23 @@ export function mountSupportChat(root, { floating = false, onClose = null } = {}
   return { startNew };
 }
 
+/**
+ * Keeps a floating chat panel inside the *visual* viewport so the composer stays above the Android
+ * soft keyboard (100vh does not shrink when the keyboard opens; visualViewport does).
+ */
+function trackViewport(panel) {
+  const vv = window.visualViewport;
+  if (!vv) return () => { };
+  const apply = () => {
+    panel.style.setProperty("--sc-vh", `${Math.round(vv.height)}px`);
+    panel.style.setProperty("--sc-top", `${Math.round(vv.offsetTop)}px`);
+  };
+  apply();
+  vv.addEventListener("resize", apply);
+  vv.addEventListener("scroll", apply);
+  return () => { vv.removeEventListener("resize", apply); vv.removeEventListener("scroll", apply); panel.style.removeProperty("--sc-vh"); panel.style.removeProperty("--sc-top"); };
+}
+
 /** Floating launcher for customer pages (not shown on the Support page, which embeds the chat). */
 export function mountLauncher() {
   if (document.querySelector("[data-support-launcher]")) return;
@@ -345,13 +383,15 @@ export function mountLauncher() {
   const panel = el("div"); panel.hidden = true;
   document.body.append(panel, btn);
   let mounted = false;
+  let untrack = () => { };
   const open = () => {
     if (!mounted) { mountSupportChat(panel, { floating: true, onClose: close }); mounted = true; }
     panel.hidden = false; btn.setAttribute("aria-expanded", "true"); btn.hidden = true;
     document.body.classList.add("sc-open");
-    const i = panel.querySelector("textarea"); if (i) i.focus();
+    untrack = trackViewport(panel);
+    const i = panel.querySelector("textarea"); if (i) i.focus({ preventScroll: true });
   };
-  function close() { panel.hidden = true; btn.hidden = false; btn.setAttribute("aria-expanded", "false"); document.body.classList.remove("sc-open"); btn.focus(); }
+  function close() { untrack(); panel.hidden = true; btn.hidden = false; btn.setAttribute("aria-expanded", "false"); document.body.classList.remove("sc-open"); btn.focus({ preventScroll: true }); }
   btn.addEventListener("click", open);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !panel.hidden) close(); });
 }

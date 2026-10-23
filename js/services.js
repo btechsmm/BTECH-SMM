@@ -91,7 +91,9 @@ function isOfflineFallback() {
 }
 
 function platformLabel(id) {
-  return PLATFORMS.find((p) => p.id === id)?.label || id;
+  const k = pfKey(id);
+  const raw = String(id || "");
+  return PLATFORMS.find((p) => p.id === id || p.id === k)?.label || PLATFORM_NAMES[k] || (raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : "");
 }
 
 function categoryLabel(id) {
@@ -111,18 +113,30 @@ const PLATFORM_ICONS = {
   facebook: `<svg viewBox="-2.43 -2.68 30.36 30.36" fill="currentColor" aria-hidden="true" focusable="false"><path d="M14 21v-7.5h2.5l.4-3H14V8.4c0-.9.2-1.5 1.5-1.5H17V4.3C16.7 4.2 15.8 4 14.7 4c-2.2 0-3.7 1.3-3.7 3.8v2.7H8.5v3H11V21h3z"/></svg>`,
   x: `<svg viewBox="-14.09 -14.09 52.17 52.17" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>`,
   telegram: `<svg viewBox="-0.58 0.99 23.27 23.27" fill="currentColor" aria-hidden="true" focusable="false"><path d="M16.906 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>`,
+  // Simplified geometric glyphs (not official artwork); colours come from the --pf tokens in components.css.
+  whatsapp: `<svg viewBox="-4 -4 32 32" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 8.5c-.4 1.5.8 3.7 2.4 5 1.6 1.2 3.2 1.7 4 1l.6-1.2-2-1-.9.8c-.8-.3-1.9-1.4-2.2-2.2l.8-.9-1-2z"/></svg>`,
+  linkedin: `<svg viewBox="-4 -4 32 32" fill="currentColor" aria-hidden="true" focusable="false"><circle cx="6" cy="6" r="2"/><rect x="4" y="9" width="4" height="11"/><path d="M10 9h3.6v1.6c.6-1 1.8-1.9 3.6-1.9 3.2 0 3.8 2.1 3.8 4.8V20h-4v-5.6c0-1.3 0-2.6-1.6-2.6S14 13 14 14.4V20h-4z"/></svg>`,
+  snapchat: `<svg viewBox="-4 -4 32 32" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12 3.5c-3 0-4.6 2.2-4.6 4.8v2.2c-.5.2-1.5.3-1.9.4.1.7 1 .9 1.6 1.1-.4 1-1.2 1.9-2.5 2.3.1.6 1.2.9 2.2 1 .2.5.1 1 .8 1.1.8.1 1.6-.1 2.4.3.6.4 1.3 1.1 2 1.1s1.4-.7 2-1.1c.8-.4 1.6-.2 2.4-.3.7-.1.6-.6.8-1.1 1-.1 2.1-.4 2.2-1-1.3-.4-2.1-1.3-2.5-2.3.6-.2 1.5-.4 1.6-1.1-.4-.1-1.4-.2-1.9-.4V8.3c0-2.6-1.6-4.8-4.6-4.8z"/></svg>`,
+  pinterest: `<svg viewBox="-4 -4 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9.5 21l1.8-7.5M9 14.5C7.5 11 9 7 12.5 7c2.5 0 3.8 1.6 3.8 3.5 0 2.5-1.5 4-3.2 4-1 0-1.7-.7-1.5-1.7"/></svg>`,
 };
 
+// Platform ids can arrive in several spellings from the catalogue; normalise for icon/colour lookups.
+const PLATFORM_ALIASES = { twitter: "x", "x-twitter": "x", fb: "facebook", ig: "instagram", yt: "youtube", wa: "whatsapp", tg: "telegram", snap: "snapchat" };
+const PLATFORM_NAMES = { tiktok: "TikTok", instagram: "Instagram", youtube: "YouTube", facebook: "Facebook", x: "X", telegram: "Telegram", whatsapp: "WhatsApp", linkedin: "LinkedIn", snapchat: "Snapchat", pinterest: "Pinterest" };
+const pfKey = (id) => { const k = String(id || "").toLowerCase().trim(); return PLATFORM_ALIASES[k] || k; };
+const pfAttr = (id) => escapeHtml(pfKey(id));
+
 function platformIcon(id) {
-  return `<span class="platform-tag__icon platform-badge platform-badge--${id}" aria-hidden="true">${PLATFORM_ICONS[id] || ""}</span>`;
+  const k = pfKey(id);
+  return `<span class="platform-tag__icon platform-badge platform-badge--${pfAttr(k)}" data-platform="${pfAttr(k)}" aria-hidden="true">${PLATFORM_ICONS[k] || ""}</span>`;
 }
 
 function serviceCard(svc) {
   const unit = svc.unit ? svc.unit : "1,000";
   return `
-  <article class="service-card" data-reveal data-platform="${svc.platform}" data-category="${svc.category}">
+  <article class="service-card" data-reveal data-platform="${pfAttr(svc.platform)}" data-category="${svc.category}">
     <div class="service-card__top">
-      <span class="platform-tag platform-tag--${svc.platform}">${platformIcon(svc.platform)}${platformLabel(svc.platform)}</span>
+      <span class="platform-tag" data-platform="${pfAttr(svc.platform)}">${platformIcon(svc.platform)}${platformLabel(svc.platform)}</span>
       ${svc.featured ? '<span class="badge badge--accent">Popular</span>' : ""}
     </div>
     <h3 class="service-card__name">${escapeHtml(svc.name)}</h3>
@@ -154,7 +168,7 @@ export function renderFeatured(container, count = 3) {
 
 function categoryTile(categoryId, platformId, count) {
   return `
-  <a class="catalogue-tile" data-reveal href="services?platform=${platformId}&category=${categoryId}">
+  <a class="catalogue-tile" data-reveal data-platform="${pfAttr(platformId)}" href="services?platform=${platformId}&category=${categoryId}">
     <span class="catalogue-tile__label">${escapeHtml(categoryLabel(categoryId))}</span>
     <span class="catalogue-tile__count">${count} service${count === 1 ? "" : "s"}</span>
   </a>`;
@@ -162,8 +176,8 @@ function categoryTile(categoryId, platformId, count) {
 
 function platformTile(platformId, count) {
   return `
-  <a class="catalogue-tile" data-reveal href="services?platform=${platformId}">
-    <span class="catalogue-tile__icon platform-badge platform-badge--${platformId}" aria-hidden="true">${PLATFORM_ICONS[platformId] || ""}</span>
+  <a class="catalogue-tile" data-reveal data-platform="${pfAttr(platformId)}" href="services?platform=${platformId}">
+    <span class="catalogue-tile__icon platform-badge platform-badge--${pfAttr(platformId)}" data-platform="${pfAttr(platformId)}" aria-hidden="true">${PLATFORM_ICONS[pfKey(platformId)] || ""}</span>
     <span class="catalogue-tile__label">${platformLabel(platformId)}</span>
     <span class="catalogue-tile__count">${count} service${count === 1 ? "" : "s"}</span>
   </a>`;
@@ -179,7 +193,7 @@ function renderBreadcrumb(platform, category) {
   }
   nav.style.display = "block";
   const parts = [`<a href="services">Services</a>`];
-  parts.push(category ? `<a href="services?platform=${platform}">${platformLabel(platform)}</a>` : `<span>${platformLabel(platform)}</span>`);
+  parts.push(category ? `<a href="services?platform=${platform}" data-platform="${pfAttr(platform)}">${platformLabel(platform)}</a>` : `<span data-platform="${pfAttr(platform)}">${platformLabel(platform)}</span>`);
   if (category) parts.push(`<span>${categoryLabel(category)}</span>`);
   nav.innerHTML = parts.join(` <span class="muted">/</span> `);
 }
