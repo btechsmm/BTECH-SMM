@@ -640,6 +640,8 @@ export async function initAdminPage() {
       const box = document.querySelector("[data-support-admin]");
       if (box) box.innerHTML = `<div class="panel__body panel__body--padded"><p class="muted">Unable to load Customer Service &amp; Support right now. Please refresh and try again.</p></div>`;
     }),
+    // Cyber Defense: hidden unless the server confirms a security administrator; failures stay silent.
+    import("./cyber-defense.js").then((m) => m.initCyberDefense()).catch((err) => console.warn("Cyber Defense unavailable:", err && err.message)),
     initAmbassadorAdmin().catch((err) => {
       console.error("Ambassador admin failed to load:", err);
       const box = document.querySelector("[data-ambassador-admin]");

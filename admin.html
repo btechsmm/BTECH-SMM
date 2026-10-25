@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="css/responsive.css" />
   <link rel="stylesheet" href="css/ambassador.css" />
   <link rel="stylesheet" href="css/support-chat.css" />
+  <link rel="stylesheet" href="css/cyber-defense.css" />
 </head>
 
 <body data-page="admin" data-nav="admin" data-requires-auth="true">
@@ -63,6 +64,7 @@
           <a href="#users-section">Users</a>
           <a href="#ambassadors-section">Ambassadors</a>
           <a href="#support-section">Support</a>
+          <a href="#cyber-section" data-cyber-nav hidden>Cyber Defense</a>
           <a href="insights">Insights</a>
           <a href="#loyalty-section">Loyalty</a>
           <a href="#settings-section">Settings</a>
@@ -553,6 +555,14 @@
             <div class="skeleton" style="height:120px"></div>
           </div>
         </div>
+      </div>
+
+      <!-- BTECH CYBER DEFENSE: stays hidden unless the database confirms this user is a security administrator. -->
+      <div id="cyber-section" class="panel" data-cyber-panel hidden style="margin-bottom:var(--sp-8)">
+        <div class="panel__head">
+          <h3>Cyber Defense</h3>
+        </div>
+        <div data-cyber-defense></div>
       </div>
 
       <div id="ambassadors-section" class="panel" style="margin-bottom:var(--sp-8)">

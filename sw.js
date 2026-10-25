@@ -23,6 +23,7 @@
  * even though they took effect immediately server-side. Supabase
  * requests must always hit the network live.
  *
+ * v33: BTECH CYBER DEFENSE admin module (cyber-defense.js / .css), hidden from non-security admins.
  * v26: BTECH CUSTOMER SUPPORT — AI chat widget, ticket threads, admin Customer Service & Support (support-chat.*, support-admin.js, support.js, main.js).
  * v23: White top bar in both themes, larger logos, sidebar drawn in the first frame (prepaint.js, shell.js, sidebar.js, components.css, customer pages).
  * v22: Ambassador application form, admin Applications panel and the Ambassador Rewards Card (ambassador-apply.js, ambassador.css, ambassador.js, ambassador-admin.js).
@@ -42,7 +43,7 @@
  * handler.
  */
 
-const CACHE_VERSION = "btechsmm-v32";
+const CACHE_VERSION = "btechsmm-v33";
 // Pages are listed by their clean URL (Render rewrites /login -> login.html). offline.html is kept as a
 // real file name on purpose: it is the fixed fallback served by the fetch handler below.
 const PRECACHE_URLS = [
@@ -69,6 +70,7 @@ const PRECACHE_URLS = [
   "css/ambassador.css",
   "css/finance.css",
   "css/support-chat.css",
+  "css/cyber-defense.css",
   "js/app.js",
   "js/main.js",
   "js/shell.js",
@@ -103,6 +105,7 @@ const PRECACHE_URLS = [
   "js/finance.js",
   "js/support-chat.js",
   "js/support-admin.js",
+  "js/cyber-defense.js",
   "js/mpesa-card.js",
   "js/pay.js",
   "css/pay.css",
