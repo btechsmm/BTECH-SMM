@@ -8,7 +8,7 @@
  */
 import { supabase } from "./supabase.js";
 import { AuthService } from "./auth.js";
-import { BUSINESS } from "./config.js";
+import { SUPPORT } from "./contact.js";
 
 const WELCOME =
   "Hello! Welcome to BTECH SMM Support. I'm here to help with your orders, payments, wallet, services, account and other BTECH SMM questions. What can I help you with today?";
@@ -261,7 +261,7 @@ export function mountSupportChat(root, { floating = false, onClose = null } = {}
     const box = el("div", "sc__fallback");
     const human = el("button", "btn btn--primary btn--sm", "Contact human support"); human.type = "button";
     human.addEventListener("click", () => { box.remove(); showTicketCard(prefill || { category: "general", subject: "", message: "" }, { manual: !prefill }); });
-    const faq = el("a", "btn btn--ghost btn--sm", "Open WhatsApp"); faq.href = `https://wa.me/${BUSINESS.whatsappNumber}`; faq.target = "_blank"; faq.rel = "noopener noreferrer";
+    const faq = el("a", "btn btn--ghost btn--sm", "Open WhatsApp"); faq.href = SUPPORT.whatsappUrl; faq.target = "_blank"; faq.rel = "noopener noreferrer";
     box.append(human, faq);
     push(box);
   }
@@ -337,7 +337,7 @@ export function mountSupportChat(root, { floating = false, onClose = null } = {}
     const n = el("div", "sc__notice");
     n.append("Please log in to chat about your orders, wallet and account. ");
     const a = el("a", "btn btn--primary btn--sm", "Log in"); a.href = "login";
-    n.append(a, document.createTextNode(` Or contact us: ${BUSINESS.email}, WhatsApp +${BUSINESS.whatsappNumber}.`));
+    n.append(a, document.createTextNode(` Or contact us: ${SUPPORT.email}, WhatsApp ${SUPPORT.phoneDisplay}.`));
     log.append(n);
     return { startNew };
   }

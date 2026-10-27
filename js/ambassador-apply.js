@@ -15,6 +15,7 @@
 import { supabase } from "./supabase.js";
 import { AuthService } from "./auth.js";
 import { BUSINESS } from "./config.js";
+import { SUPPORT } from "./contact.js";
 import { createCropper, photoUrl, uploadPhoto, removePhoto } from "./photo.js";
 import { formatDate, formatDateTime, escapeHtml, isValidEmail, showToast, setButtonLoading } from "./utils.js";
 
@@ -27,7 +28,7 @@ const STATUS_LABEL = { submitted: "Under review", clarification_requested: "More
 const STATUS_BADGE = { submitted: "pending", clarification_requested: "processing", approved: "completed", declined: "cancelled" };
 
 function contactLine() {
-  return `Questions? Email <a href="mailto:${BUSINESS.email}" style="color:var(--color-primary)">${BUSINESS.email}</a> or WhatsApp ${BUSINESS.phone}.`;
+  return `Questions? Email <a href="${SUPPORT.mailUrl}" style="color:var(--color-primary)">${SUPPORT.email}</a> or WhatsApp <a href="${SUPPORT.whatsappUrl}" style="color:var(--color-primary)">${SUPPORT.phoneDisplay}</a>.`;
 }
 
 /* ------------------------------ entry point ------------------------------ */

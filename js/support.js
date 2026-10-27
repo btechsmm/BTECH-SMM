@@ -8,7 +8,7 @@
 
 import { supabase } from "./supabase.js";
 import { AuthService } from "./auth.js";
-import { BUSINESS } from "./config.js";
+import { SUPPORT } from "./contact.js";
 import { formatDateTime, escapeHtml, showToast, setButtonLoading } from "./utils.js";
 
 const STATUS = {
@@ -26,7 +26,7 @@ async function renderFaqs() {
     items = (data || []).filter((k) => !/^Policies BTECH SMM has not published/.test(k.title)).map((k) => ({ q: k.title, a: k.body }));
   }
   if (!items.length) {
-    items = [{ q: "How can I contact BTECH SMM?", a: `Email ${BUSINESS.email} or WhatsApp +${BUSINESS.whatsappNumber}. Log in to chat with the assistant or send a support request.` }];
+    items = [{ q: "How can I contact BTECH SMM?", a: `Email ${SUPPORT.email}, WhatsApp ${SUPPORT.phoneDisplay} or call ${SUPPORT.phoneDisplay}. Log in to chat with the assistant or send a support request.` }];
   }
   container.innerHTML = items.map((f, i) => `
     <details class="faq-item" ${i === 0 ? "open" : ""}>

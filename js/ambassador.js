@@ -15,6 +15,7 @@
 import { supabase } from "./supabase.js";
 import { AuthService } from "./auth.js";
 import { BUSINESS } from "./config.js";
+import { SUPPORT } from "./contact.js";
 import { renderBadge, downloadPng, downloadPdf } from "./badge.js";
 import { createCropper, photoUrl, uploadPhoto, removePhoto } from "./photo.js";
 import { formatNumber, formatDate, formatDateTime, escapeHtml, showToast, setButtonLoading } from "./utils.js";
@@ -73,7 +74,7 @@ function noticeHtml(title, text, extra = "") {
 }
 
 function contactLine() {
-  return `Questions? Email <a href="mailto:${BUSINESS.email}" style="color:var(--color-primary)">${BUSINESS.email}</a> or WhatsApp ${BUSINESS.phone}.`;
+  return `Questions? Email <a href="${SUPPORT.mailUrl}" style="color:var(--color-primary)">${SUPPORT.email}</a> or WhatsApp <a href="${SUPPORT.whatsappUrl}" style="color:var(--color-primary)">${SUPPORT.phoneDisplay}</a>.`;
 }
 
 /* ------------------------------- dashboard ------------------------------- */
@@ -525,7 +526,7 @@ export async function initVerifyPage() {
     return;
   }
   if (!data?.found) {
-    root.innerHTML = `<div class="verify-card verify-card--bad"><span class="verify-seal" aria-hidden="true">?</span><h2>Ambassador not found</h2><p>We couldn't find an ambassador with that ID. If you were given this badge, please contact ${escapeHtml(BUSINESS.name)} to confirm.</p><p><a href="mailto:${BUSINESS.email}" style="color:var(--color-primary)">${BUSINESS.email}</a> · ${BUSINESS.phone}</p></div>`;
+    root.innerHTML = `<div class="verify-card verify-card--bad"><span class="verify-seal" aria-hidden="true">?</span><h2>Ambassador not found</h2><p>We couldn't find an ambassador with that ID. If you were given this badge, please contact ${escapeHtml(BUSINESS.name)} to confirm.</p><p><a href="${SUPPORT.mailUrl}" style="color:var(--color-primary)">${SUPPORT.email}</a> · ${SUPPORT.phoneDisplay}</p></div>`;
     return;
   }
   const ok = data.status === "approved";
@@ -547,6 +548,6 @@ export async function initVerifyPage() {
         ${ok && data.referral_code ? `<a class="btn btn--primary" href="register?ref=${encodeURIComponent(data.referral_code)}">Join BTECH SMM</a>` : ""}
         <a class="btn btn--secondary" href="${BUSINESS.website}">Visit ${escapeHtml(BUSINESS.name)}</a>
       </div>
-      <p class="form-hint" style="margin-top:var(--sp-4)">${escapeHtml(BUSINESS.email)} · ${escapeHtml(BUSINESS.phone)}</p>
+      <p class="form-hint" style="margin-top:var(--sp-4)">${escapeHtml(SUPPORT.email)} · ${escapeHtml(SUPPORT.phoneDisplay)}</p>
     </div>`;
 }

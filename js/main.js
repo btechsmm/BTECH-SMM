@@ -27,6 +27,7 @@ import { initAmbassadorPage, initVerifyPage } from "./ambassador.js";
 import { initInsightsPage } from "./insights.js";
 import { captureReferral, claimPendingReferral } from "./referral.js";
 import { BUSINESS } from "./config.js";
+import { SUPPORT, initSupportContacts } from "./contact.js";
 
 function applyStoredTheme() {
   const saved = localStorage.getItem("btechsmm:theme");
@@ -115,12 +116,12 @@ async function initPage() {
 /** Fills any [data-biz-*] element from the central BUSINESS config (terms, privacy, etc.). */
 function fillBusinessDetails() {
   document.querySelectorAll("[data-biz-email]").forEach((el) => {
-    el.textContent = BUSINESS.email;
-    if (el.tagName === "A") el.href = `mailto:${BUSINESS.email}`;
+    el.textContent = SUPPORT.email;
+    if (el.tagName === "A") el.href = SUPPORT.mailUrl;
   });
   document.querySelectorAll("[data-biz-phone]").forEach((el) => {
-    el.textContent = BUSINESS.phone;
-    if (el.tagName === "A") el.href = `https://wa.me/${BUSINESS.whatsappNumber}`;
+    el.textContent = SUPPORT.phoneDisplay;
+    if (el.tagName === "A") el.href = SUPPORT.whatsappUrl;
   });
   document.querySelectorAll("[data-biz-site]").forEach((el) => {
     el.textContent = BUSINESS.website.replace(/^https?:\/\//, "");
@@ -139,6 +140,7 @@ async function boot() {
   registerServiceWorker();
   captureReferral(); // remember ?ref=CODE before anything can navigate away
   fillBusinessDetails();
+  initSupportContacts(); // support email / WhatsApp / call links in the floating button and footer
 
   await AuthService.init();
 
