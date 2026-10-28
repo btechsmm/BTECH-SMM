@@ -43,7 +43,7 @@
  * handler.
  */
 
-const CACHE_VERSION = "btechsmm-v36";
+const CACHE_VERSION = "btechsmm-v37";
 // Pages are listed by their clean URL (Render rewrites /login -> login.html). offline.html is kept as a
 // real file name on purpose: it is the fixed fallback served by the fetch handler below.
 const PRECACHE_URLS = [
